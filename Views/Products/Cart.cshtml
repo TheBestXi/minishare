@@ -1,25 +1,107 @@
 @model List<MiniShare.Models.Product>
 @{
     ViewData["Title"] = "购物车";
+    var images = ViewBag.ProductMainImages as IDictionary<int, string>;
 }
 <h2>购物车</h2>
-@if (Model.Count == 0)
+@if (Model == null || Model.Count ==0)
 {
     <div class="alert alert-info">购物车为空</div>
 }
 else
 {
-    <ul class="list-group">
-    @foreach (var p in Model)
-    {
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>@p.Name</span>
-            <span>￥@p.Price.ToString("F2")</span>
-        </li>
-    }
-    </ul>
-    <form asp-action="Checkout" method="post" class="mt-3">
-        <button class="btn btn-primary">下单</button>
-        <a class="btn btn-secondary" asp-action="Index">继续购物</a>
+    <form asp-action="Checkout" method="post" id="checkoutForm">
+        @Html.AntiForgeryToken()
+        <div class="mb-2">
+            <input type="checkbox" id="selectAll" /> 全选
+        </div>
+        <ul class="list-group">
+        @foreach (var p in Model)
+        {
+            <li class="list-group-item d-flex align-items-center">
+                <div class="me-3">
+                    <img src="@(images != null && images.ContainsKey(p.Id) ? images[p.Id] : $"https://picsum.photos/seed/product-{p.Id}/120/120.jpg")" alt="@p.Name" class="img-thumbnail" style="width:80px; height:80px; object-fit:cover;" />
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold">@p.Name</div>
+                    <div class="text-muted price-text">￥@p.Price.ToString("F2")</div>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input item-checkbox" type="checkbox" name="selectedIds" value="@p.Id" id="select_@p.Id">
+                </div>
+                <div class="d-flex flex-column align-items-end">
+                    <div>
+                        <form asp-action="RemoveFromCart" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger me-1">删除</button>
+                        </form>
+                        <button type="button" class="btn btn-sm btn-outline-secondary add-fav-btn" data-id="@p.Id">
+                            <i class="far fa-heart"></i> 收藏
+                        </button>
+                    </div>
+                </div>
+            </li>
+        }
+        </ul>
+
+        <div class="mt-3 d-flex justify-content-between align-items-center">
+            <div>
+                <button type="submit" class="btn btn-primary">结算所选</button>
+                <a class="btn btn-secondary" asp-action="Index">继续购物</a>
+            </div>
+            <div>
+                选中合计: <span id="selectedTotal">￥0.00</span>
+            </div>
+        </div>
     </form>
+}
+
+@section Scripts {
+    <script>
+        $(function(){
+            $('#selectAll').on('change', function(){ $('.item-checkbox').prop('checked', this.checked).trigger('change'); });
+
+            $('.item-checkbox').on('change', updateTotal);
+
+            function updateTotal(){
+                var total =0.0;
+                $('.item-checkbox:checked').each(function(){
+                    var li = $(this).closest('li');
+                    var priceText = li.find('.price-text').text().replace('￥', '').trim();
+                    var price = parseFloat(priceText) ||0;
+                    total += price;
+                });
+                $('#selectedTotal').text('￥' + total.toFixed(2));
+                var all = $('.item-checkbox').length;
+                var checked = $('.item-checkbox:checked').length;
+                $('#selectAll').prop('checked', all >0 && checked === all);
+            }
+
+            $('.add-fav-btn').click(function(){
+                var btn = $(this);
+                var id = btn.data('id');
+                $.post('/Products/AddToFavorites', { id: id })
+                .done(function(resp){
+                    if(resp && resp.success){
+                        if(resp.added){
+                            btn.removeClass('btn-outline-secondary').addClass('btn-primary');
+                            btn.find('i').removeClass('far').addClass('fas');
+                        } else {
+                            btn.removeClass('btn-primary').addClass('btn-outline-secondary');
+                            btn.find('i').removeClass('fas').addClass('far');
+                        }
+                    } else {
+                        alert('操作失败，请先登录');
+                    }
+                })
+                .fail(function(){
+                    alert('操作失败，请先登录');
+                });
+            });
+
+            // 初始化a
+            updateTotal();
+        });
+    </script>
 }
