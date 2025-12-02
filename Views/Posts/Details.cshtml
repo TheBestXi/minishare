@@ -165,8 +165,12 @@
                                                 @comment.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
                                             </div>
                                             
-                                            @* 只有当前登录用户是该评论作者时，显示删除按钮 *@
-                                            @if (currentUserId.HasValue && comment.UserId == currentUserId.Value)
+                                            @* 作者本人 或 管理员 才能看到删除按钮 *@
+                                            @if (User.Identity?.IsAuthenticated == true 
+                                                && (
+                                                    (currentUserId.HasValue && comment.UserId == currentUserId.Value)
+                                                    || User.IsInRole("Admin")
+                                                ))
                                             {
                                                 <form asp-action="DeleteComment"
                                                       asp-controller="Posts"
