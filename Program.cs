@@ -12,7 +12,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
 
-// 注册文件上传服务
+// 注册文件上传服务器
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 // DbContext + MySQL
