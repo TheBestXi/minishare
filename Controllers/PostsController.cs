@@ -305,6 +305,7 @@ namespace MiniShare.Controllers
             // 确保用户只能删除自己的评论
             if (comment.UserId != userId && !User.IsInRole("Admin")) 
             {
+                TempData["CommentError"] = "您没有权限删除此评论";
                 return Forbid(); 
             } 
             
