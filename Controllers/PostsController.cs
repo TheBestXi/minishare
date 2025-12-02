@@ -289,5 +289,21 @@ namespace MiniShare.Controllers
             }
             return list;
         }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int id, int postId)
+        {
+            var userIdStr = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
+            var userId = int.Parse(userIdStr);
+
+            var comment = await _context.Comments.FindAsync(postId);
+            if (comment == null) return NotFound();
+            
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = comment.PostId });
+        }
     }
 }
