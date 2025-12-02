@@ -1,0 +1,364 @@
+@model MiniShare.Models.Product
+@{
+    ViewData["Title"] = "商品详情 - " + Model.Name;
+    var productImages = ViewBag.ProductImages as List<MiniShare.Models.ProductImage> ?? new List<MiniShare.Models.ProductImage>();
+    var mainImage = ViewBag.MainImage as MiniShare.Models.ProductImage;
+    var comments = ViewBag.Comments as List<MiniShare.Models.ProductComment> ?? new List<MiniShare.Models.ProductComment>();
+    var averageRating = ViewBag.AverageRating as double? ?? 0;
+    var commentCount = ViewBag.CommentCount as int? ?? 0;
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">首页</a></li>
+            <li class="breadcrumb-item"><a href="/Products">商品列表</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    @if (TempData["CommentSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["CommentSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["CommentError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["CommentError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Product Details -->
+    <div class="row mb-5">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-4">
+            <div class="product-images position-relative">
+                <!-- Main Image Container -->
+                <div class="main-image-container mb-3 position-relative" style="background: #f8f9fa; border-radius: 8px; overflow: hidden; min-height: 500px; display: flex; align-items: center; justify-content: center;">
+                    @if (productImages.Any())
+                    {
+                        <img id="mainProductImage" 
+                             src="@(productImages.First().ImageUrl)" 
+                             alt="@Model.Name" 
+                             class="img-fluid" 
+                             style="max-height: 500px; width: 100%; object-fit: contain;">
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted p-5">
+                            <i class="fas fa-image fa-5x mb-3"></i>
+                            <p>暂无图片</p>
+                        </div>
+                    }
+                    
+                    <!-- Navigation Buttons -->
+                    @if (productImages.Count > 1)
+                    {
+                        <button class="image-nav-btn prev-btn btn btn-primary rounded-circle position-absolute" 
+                                style="top: 50%; left: 15px; transform: translateY(-50%); z-index: 10; width: 50px; height: 50px; opacity: 0.8;">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="image-nav-btn next-btn btn btn-primary rounded-circle position-absolute" 
+                                style="top: 50%; right: 15px; transform: translateY(-50%); z-index: 10; width: 50px; height: 50px; opacity: 0.8;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    }
+                </div>
+                
+                <!-- Thumbnails -->
+                @if (productImages.Count > 1)
+                {
+                    <div class="thumbnail-container d-flex gap-2 overflow-x-auto pb-2" style="max-width: 100%;">
+                        @foreach (var image in productImages)
+                        {
+                            <div class="thumbnail-item flex-shrink-0" style="cursor: pointer; border: 2px solid transparent; border-radius: 4px; padding: 2px;">
+                                <img src="@image.ImageUrl" 
+                                     alt="@Model.Name" 
+                                     class="thumbnail-image img-thumbnail" 
+                                     data-image-url="@image.ImageUrl"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="product-info">
+                <h1 class="display-5 fw-bold mb-3">@Model.Name</h1>
+                
+                <!-- Rating and Reviews -->
+                <div class="mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="rating-display">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= Math.Round(averageRating) ? "text-warning" : "text-muted")"></i>
+                            }
+                        </div>
+                        <span class="fw-bold">@averageRating.ToString("F1")</span>
+                        <span class="text-muted">(@commentCount 条评价)</span>
+                    </div>
+                </div>
+                
+                <!-- Price -->
+                <div class="price-section mb-4 pb-4 border-bottom">
+                    <div class="h2 text-danger fw-bold mb-2">￥@Model.Price.ToString("F2")</div>
+                    <div class="text-muted small">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        上架时间：@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="description-section mb-4">
+                    <h5 class="fw-bold mb-2">商品描述</h5>
+                    <div class="product-description text-muted" style="line-height: 1.8;">
+                        @(Model.Description ?? "暂无详细描述")
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons d-flex gap-3 mb-4">
+                    <form asp-controller="Products" asp-action="AddToCart" method="post" class="flex-grow-1">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="fas fa-cart-plus me-2"></i>加入购物车
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Details Tabs -->
+    <div class="product-tabs mb-5">
+        <ul class="nav nav-tabs" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
+                    <i class="fas fa-align-left me-1"></i>商品详情
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">
+                    <i class="fas fa-comments me-1"></i>用户评论 (@commentCount)
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content border border-top-0 p-4" id="productTabsContent" style="min-height: 300px;">
+            <!-- Description Tab -->
+            <div class="tab-pane fade show active" id="description" role="tabpanel">
+                <h5 class="fw-bold mb-3">详细介绍</h5>
+                <div class="product-full-description" style="line-height: 2;">
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p>@Model.Description</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">暂无详细描述</p>
+                    }
+                </div>
+            </div>
+            
+            <!-- Comments Tab -->
+            <div class="tab-pane fade" id="comments" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">用户评论 (@commentCount)</h5>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCommentModal">
+                            <i class="fas fa-plus me-1"></i>发表评论
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/Identity/Account/Login" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-1"></i>登录后评论
+                        </a>
+                    }
+                </div>
+                
+                <!-- Comments List -->
+                <div class="comments-list">
+                    @if (comments.Any())
+                    {
+                        @foreach (var comment in comments)
+                        {
+                            <div class="comment-item mb-4 pb-4 border-bottom">
+                                <div class="d-flex gap-3">
+                                    <!-- Avatar -->
+                                    <div class="comment-avatar">
+                                        <img src="@(comment.User?.AvatarUrl ?? "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(comment.User?.DisplayName ?? comment.User?.Email ?? "用户"))" 
+                                             alt="用户头像" 
+                                             class="rounded-circle" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    </div>
+                                    
+                                    <!-- Comment Content -->
+                                    <div class="comment-content flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <span class="comment-author fw-bold">@(comment.User?.DisplayName ?? comment.User?.Email ?? "匿名用户")</span>
+                                                <div class="comment-rating d-inline-block ms-2">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="fas fa-star @(i <= comment.Rating ? "text-warning" : "text-muted")" style="font-size: 0.9rem;"></i>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="comment-time text-muted small">
+                                                @comment.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Comment Text -->
+                                        <div class="comment-text">
+                                            @comment.Content
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>暂无评论，快来发表第一条评论吧！</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Comment Modal -->
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="modal fade" id="addCommentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">发表评论</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-controller="ProductDetails" asp-action="AddComment" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="productId" value="@Model.Id" />
+                        
+                        <!-- Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">评分 <span class="text-danger">*</span></label>
+                            <div class="rating-input d-flex gap-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="fas fa-star text-warning cursor-pointer" data-rating="@i" style="font-size: 1.5rem; cursor: pointer;"></i>
+                                }
+                            </div>
+                            <input type="hidden" id="commentRating" name="rating" value="5" required>
+                        </div>
+                        
+                        <!-- Comment Text -->
+                        <div class="mb-3">
+                            <label for="commentContent" class="form-label fw-bold">评论内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="commentContent" name="content" rows="5" placeholder="请输入您的评论..." required maxlength="1000"></textarea>
+                            <small class="form-text text-muted">最多1000字</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">提交评论</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 图片数组
+            const images = [
+                @foreach (var img in productImages)
+                {
+                    @:"@img.ImageUrl",
+                }
+            ];
+            
+            let currentImageIndex = 0;
+            
+            // 下一张图片
+            $('.next-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                $('#mainProductImage').attr('src', images[currentImageIndex]);
+                updateThumbnailActive();
+            });
+            
+            // 上一张图片
+            $('.prev-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                $('#mainProductImage').attr('src', images[currentImageIndex]);
+                updateThumbnailActive();
+            });
+            
+            // 缩略图点击
+            $('.thumbnail-image').click(function() {
+                const imageUrl = $(this).data('image-url');
+                currentImageIndex = images.indexOf(imageUrl);
+                $('#mainProductImage').attr('src', imageUrl);
+                updateThumbnailActive();
+            });
+            
+            // 更新缩略图激活状态
+            function updateThumbnailActive() {
+                $('.thumbnail-item').removeClass('border-primary');
+                $('.thumbnail-item').eq(currentImageIndex).addClass('border-primary');
+            }
+            
+            // 初始化激活状态
+            if (images.length > 0) {
+                updateThumbnailActive();
+            }
+            
+            // 评分选择
+            $('.rating-input i').click(function() {
+                const rating = $(this).data('rating');
+                $('#commentRating').val(rating);
+                
+                $('.rating-input i').each(function(index) {
+                    if (index < rating) {
+                        $(this).removeClass('text-muted').addClass('text-warning');
+                    } else {
+                        $(this).removeClass('text-warning').addClass('text-muted');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .thumbnail-item:hover {
+            border-color: #0d6efd !important;
+        }
+        .thumbnail-item.border-primary {
+            border-color: #0d6efd !important;
+        }
+    </style>
+}
+

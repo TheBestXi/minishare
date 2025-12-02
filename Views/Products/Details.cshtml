@@ -1,0 +1,444 @@
+@model MiniShare.Models.Product
+@{    ViewData["Title"] = "商品详情 - " + Model.Name;}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">首页</a></li>
+            <li class="breadcrumb-item"><a href="/Products">商品列表</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-5">
+            <div class="product-images">
+                <!-- Main Image -->
+                <div class="main-image-container mb-3">
+                    @{// 安全获取商品图片列表
+                        var productImages = ViewBag.ProductImages as List<MiniShare.Models.ProductImage>;
+                        bool hasImages = productImages != null && productImages.Count > 0;
+                    }
+                    
+                    @if (hasImages && productImages[0] != null)
+                    {
+                        <!-- 显示实际的商品图片 -->
+                        <img id="mainProductImage" 
+                             src="@productImages[0].ImageUrl" 
+                             alt="@Model.Name" 
+                             class="main-product-image img-fluid rounded shadow-sm">
+                    }
+                    else
+                    {
+                        <!-- 显示默认图片 -->
+                        <img id="mainProductImage" 
+                             src="https://picsum.photos/seed/product-@Model.Id/800/600.jpg" 
+                             alt="@Model.Name" 
+                             class="main-product-image img-fluid rounded shadow-sm">
+                    }
+                    
+                    <!-- Navigation Buttons -->
+                    <button class="image-nav-btn prev-btn btn btn-primary rounded-circle" 
+                            style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); z-index: 10;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="image-nav-btn next-btn btn btn-primary rounded-circle" 
+                            style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 10;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Thumbnails -->
+                <div class="thumbnail-container d-flex overflow-x-auto gap-2">
+                    @if (hasImages)
+                    {
+                        <!-- 显示实际的商品缩略图 -->
+                        @foreach (var image in productImages)
+                        {
+                            @if (image != null)
+                            {
+                                <div class="thumbnail-item">
+                                    <img src="@image.ImageUrl" 
+                                         alt="@Model.Name - 图@image.SortOrder" 
+                                         class="thumbnail-image img-fluid rounded shadow-sm" 
+                                         data-full-image="@image.ImageUrl">
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <!-- 显示默认缩略图 -->
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <div class="thumbnail-item">
+                                <img src="https://picsum.photos/seed/product-@Model.Id-@i/150/150.jpg" 
+                                     alt="@Model.Name - 图@i" 
+                                     class="thumbnail-image img-fluid rounded shadow-sm" 
+                                     data-full-image="https://picsum.photos/seed/product-@Model.Id-@i/800/600.jpg">
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-lg-6 mb-5">
+            <div class="product-info">
+                <h1 class="display-6 fw-bold mb-3">@Model.Name</h1>
+                
+                <!-- Price -->
+                <div class="price-section mb-4">
+                    <div class="h2 text-primary mb-0">￥@Model.Price.ToString("F2")</div>
+                    <div class="text-muted small">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        上架时间：@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="description-section mb-5">
+                    <h5 class="fw-bold mb-2">商品描述</h5>
+                    <div class="product-description text-muted">
+                        @(Model.Description ?? "暂无详细描述")
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons d-flex gap-3 mb-5">
+                    <form asp-action="AddToCart" method="post" class="flex-grow-1">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-cart-plus me-2"></i>加入购物车
+                        </button>
+                    </form>
+                    <button class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- Product Stats -->
+                <div class="product-stats d-flex flex-wrap gap-4 text-muted">
+                    <div>
+                        <i class="fas fa-eye me-1"></i>
+                        <span>浏览量：1234</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-shopping-cart me-1"></i>
+                        <span>已售：456</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-star text-warning me-1"></i>
+                        <span>评分：4.8 (123条评价)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Details Tabs -->
+    <div class="product-tabs mb-5">
+        <ul class="nav nav-tabs" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                    <i class="fas fa-align-left me-1"></i>商品详情
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">
+                    <i class="fas fa-list-ul me-1"></i>规格参数
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab" aria-controls="comments" aria-selected="false">
+                    <i class="fas fa-comments me-1"></i>用户评论
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="productTabsContent">
+            <!-- Description Tab -->
+            <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                <div class="p-4 bg-light rounded">
+                    <h5 class="fw-bold mb-3">详细介绍</h5>
+                    <div class="product-full-description">
+                        <p>@(Model.Description ?? "暂无详细描述")</p>
+                        <p>这是一个示例商品，展示了商品详情页的完整功能。您可以在这里添加更多关于商品的详细信息，包括商品的特点、使用方法、注意事项等。</p>
+                        <p>商品详情页支持富文本格式，您可以添加图片、视频、表格等内容，让用户更全面地了解商品。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Specifications Tab -->
+            <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+                <div class="p-4 bg-light rounded">
+                    <h5 class="fw-bold mb-3">规格参数</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold w-40">品牌</td>
+                                        <td>示例品牌</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">型号</td>
+                                        <td>Product-@Model.Id</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">产地</td>
+                                        <td>中国</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">材质</td>
+                                        <td>优质材料</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold w-40">尺寸</td>
+                                        <td>标准尺寸</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">重量</td>
+                                        <td>1.0 kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">颜色</td>
+                                        <td>多种颜色可选</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">保质期</td>
+                                        <td>12个月</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comments Tab -->
+            <div class="tab-pane fade" id="comments" role="tabpanel" aria-labelledby="comments-tab">
+                <div class="p-4 bg-light rounded">
+                    <!-- Comments Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold">用户评论 (123)</h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCommentModal">
+                            <i class="fas fa-plus me-1"></i>发表评论
+                        </button>
+                    </div>
+                    
+                    <!-- Comments List -->
+                    <div class="comments-list mb-5">
+                        @for (int i = 1; i <= 3; i++)
+                        {
+                            <div class="comment-item mb-4 pb-4 border-bottom">
+                                <div class="d-flex gap-3">
+                                    <!-- Avatar -->
+                                    <div class="comment-avatar">
+                                        <img src="https://picsum.photos/seed/user-@i/50/50.jpg" 
+                                             alt="用户头像" 
+                                             class="rounded-circle" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    </div>
+                                    
+                                    <!-- Comment Content -->
+                                    <div class="comment-content flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="comment-author fw-bold">用户@i</div>
+                                            <div class="comment-time text-muted small">
+                                                @DateTime.Now.AddDays(-i).ToString("yyyy-MM-dd HH:mm")
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Rating -->
+                                        <div class="comment-rating mb-2">
+                                            @for (int j = 1; j <= 5; j++)
+                                            {
+                                                <i class="fas fa-star text-warning"></i>
+                                            }
+                                        </div>
+                                        
+                                        <!-- Comment Text -->
+                                        <div class="comment-text text-muted">
+                                            这是一个示例评论，用户对商品的评价非常满意。商品质量很好，物流也很快，下次还会再来购买。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div class="text-center">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-chevron-down me-1"></i>加载更多评论
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    <div class="related-products mb-5">
+        <h2 class="h4 fw-bold mb-4">相关推荐</h2>
+        <div class="row">
+            @for (int i = 1; i <= 4; i++)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <img src="https://picsum.photos/seed/related-@i/300/200.jpg" 
+                             class="card-img-top" 
+                             alt="相关商品@i" 
+                             style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fs-6">相关商品@i</h5>
+                            <div class="h6 text-primary mb-2">￥@(100 + i * 10).00</div>
+                            <a href="#" class="btn btn-sm btn-outline-primary w-100">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add Comment Modal -->
+<div class="modal fade" id="addCommentModal" tabindex="-1" aria-labelledby="addCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCommentModalLabel">发表评论</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCommentForm">
+                    <!-- Rating -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">评分</label>
+                        <div class="rating-input d-flex gap-1">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star text-muted cursor-pointer" data-rating="@i" style="font-size: 1.5rem;"></i>
+                            }
+                        </div>
+                        <input type="hidden" id="commentRating" name="rating" value="5">
+                    </div>
+                    
+                    <!-- Comment Text -->
+                    <div class="mb-4">
+                        <label for="commentText" class="form-label fw-bold">评论内容</label>
+                        <textarea class="form-control" id="commentText" name="content" rows="5" placeholder="请输入您的评论..." required></textarea>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">提交评论</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 动态生成图片数组
+            let images = [];
+            
+            @if (hasImages)
+            {
+                // 使用从数据库获取的实际图片URL
+                <text>
+                    images = [
+                        @foreach (var image in productImages.Where(img => img != null))
+                        {
+                            @:"@image.ImageUrl",
+                        }
+                    ];
+                    // 移除最后一个逗号
+                    images = images.slice(0, -1);
+                </text>
+            }
+            else
+            {
+                // 使用默认图片URL
+                <text>
+                    images = [
+                        "https://picsum.photos/seed/product-@Model.Id/800/600.jpg",
+                        "https://picsum.photos/seed/product-@Model.Id-1/800/600.jpg",
+                        "https://picsum.photos/seed/product-@Model.Id-2/800/600.jpg",
+                        "https://picsum.photos/seed/product-@Model.Id-3/800/600.jpg",
+                        "https://picsum.photos/seed/product-@Model.Id-4/800/600.jpg"
+                    ];
+                </text>
+            }
+            
+            // Image Carousel Functionality
+            let currentImageIndex = 0;
+            
+            // Next Image
+            $('.next-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                $('#mainProductImage').attr('src', images[currentImageIndex]);
+            });
+            
+            // Previous Image
+            $('.prev-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                $('#mainProductImage').attr('src', images[currentImageIndex]);
+            });
+            
+            // Thumbnail Click
+            $('.thumbnail-image').click(function() {
+                const fullImageUrl = $(this).data('full-image');
+                $('#mainProductImage').attr('src', fullImageUrl);
+                
+                // Update active thumbnail
+                $('.thumbnail-image').removeClass('active');
+                $(this).addClass('active');
+            });
+            
+            // Rating Input
+            $('.rating-input i').click(function() {
+                const rating = $(this).data('rating');
+                $('#commentRating').val(rating);
+                
+                // Update star display
+                $('.rating-input i').each(function(index) {
+                    if (index < rating) {
+                        $(this).removeClass('text-muted').addClass('text-warning');
+                    } else {
+                        $(this).removeClass('text-warning').addClass('text-muted');
+                    }
+                });
+            });
+            
+            // Add Comment Form
+            $('#addCommentForm').submit(function(e) {
+                e.preventDefault();
+                // Here you would normally submit the form data via AJAX
+                alert('评论提交成功！');
+                $('#addCommentModal').modal('hide');
+                $(this)[0].reset();
+            });
+        });
+    </script>
+}

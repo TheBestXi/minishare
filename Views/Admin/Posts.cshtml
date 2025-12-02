@@ -1,0 +1,98 @@
+@model List<MiniShare.Models.Post>
+@{
+    ViewData["Title"] = "帖子管理";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-newspaper me-2"></i>帖子管理
+        </h2>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 60px;">#</th>
+                        <th>标题</th>
+                        <th>作者</th>
+                        <th class="text-center" style="width: 120px;">点赞数</th>
+                        <th class="text-center" style="width: 150px;">发布时间</th>
+                        <th class="text-end" style="width: 120px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var p = Model[i];
+                        <tr>
+                            <td class="text-center fw-bold">@(i + 1)</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-newspaper text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-truncate" style="max-width: 300px;">@p.Title</div>
+                                        @if (!string.IsNullOrEmpty(p.Content))
+                                        {
+                                            <small class="text-muted text-truncate d-block" style="max-width: 300px;">@p.Content</small>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(p.Author?.AvatarUrl))
+                                    {
+                                        <img src="@p.Author.AvatarUrl" alt="头像" class="rounded-circle me-2" style="width: 35px; height: 35px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <div class="fw-bold">@(p.Author?.DisplayName ?? p.Author?.UserName ?? "未知用户")</div>
+                                        <small class="text-muted">@p.Author?.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary fs-6">
+                                    <i class="fas fa-heart me-1"></i>@p.LikeCount
+                                </span>
+                            </td>
+                            <td class="text-center text-muted">
+                                @p.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="DeletePost" method="post" class="d-inline" onsubmit="return confirm('确定要删除这个帖子吗？');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.Id" />
+                                    <button class="btn btn-danger btn-sm" type="submit">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">暂无帖子</h4>
+                <p class="text-muted">当前还没有任何帖子内容。</p>
+            </div>
+        </div>
+    }
+</div>

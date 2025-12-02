@@ -1,0 +1,95 @@
+@model MiniShare.Models.ProductRequest
+@{
+    ViewData["Title"] = "提交商品申请";
+}
+
+<div class="container py-4">
+    <h2>提交商品申请</h2>
+    <div class="alert alert-info">
+        请填写您想上架的商品信息。提交后将由管理员审核，通过后商品才会出现在商城中。
+    </div>
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">商品名称</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="Price" class="form-label">价格</label>
+            <input asp-for="Price" type="number" step="0.01" class="form-control" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">描述</label>
+            <textarea asp-for="Description" rows="5" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">商品图片 <span class="text-danger">*</span></label>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                请至少上传一张商品图片，第一张图片将作为商品主图显示在商品列表中。
+            </div>
+            <input type="file" name="productImages" multiple accept="image/*" class="form-control" required />
+            <small class="form-text text-muted">支持 JPG、PNG、GIF 格式，最多上传5张，每张不超过5MB</small>
+            <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2"></div>
+        </div>
+        
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-2"></i>提交申请
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>返回列表
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // 图片预览功能
+            $('input[name="productImages"]').on('change', function(e) {
+                const files = e.target.files;
+                const preview = $('#imagePreview');
+                preview.empty();
+                
+                if (files.length > 5) {
+                    alert('最多只能上传5张图片');
+                    $(this).val('');
+                    return;
+                }
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!file.type.startsWith('image/')) {
+                        alert('只能上传图片文件');
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = $('<img>')
+                            .attr('src', e.target.result)
+                            .addClass('img-thumbnail')
+                            .css({
+                                'width': '150px',
+                                'height': '150px',
+                                'object-fit': 'cover'
+                            });
+                        preview.append(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+}
+

@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "首页";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="fade-in">欢迎来到 MiniShare</h1>
+        <p class="lead fade-in">一个分享产品和文章的平台，让创意和知识自由流动</p>
+        <div class="fade-in text-center">
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a href="/Login" class="btn btn-light btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>立即登录
+                </a>
+            }
+            else
+            {
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/Products/Create" class="btn btn-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>发布产品
+                    </a>
+                    <a href="/Posts/Create" class="btn btn-light btn-lg">
+                        <i class="fas fa-edit me-2"></i>写文章
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Latest Products Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-header">
+            <h2>最新产品</h2>
+            <p>发现我们平台上最新添加的精选产品</p>
+        </div>
+        
+        <div class="row">
+            @if (ViewBag.LatestProducts != null)
+            {
+                @foreach (var product in ViewBag.LatestProducts)
+                {
+                    // 获取商品首图
+                    string? mainImage = null;
+                    if (ViewBag.ProductMainImages != null)
+                    {
+                        var imageDict = (Dictionary<int, string>)ViewBag.ProductMainImages;
+                        imageDict.TryGetValue(product.Id, out mainImage);
+                    }
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="product-card card h-100">
+                            <div class="product-image" style="height: 200px; overflow: hidden; background: #f8f9fa;">
+                                @if (!string.IsNullOrEmpty(mainImage))
+                                {
+                                    <img src="@mainImage" alt="@product.Name" style="width: 100%; height: 100%; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                        <i class="fas fa-image fa-3x"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@product.Name</h5>
+                                <p class="card-text">@product.Description</p>
+                                <div class="product-price">¥@product.Price.ToString("F2")</div>
+                                <a href="/ProductDetails/Index/@product.Id" class="btn btn-gradient">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">暂无产品</p>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a href="/Products/Create" class="btn btn-gradient">
+                            <i class="fas fa-plus me-2"></i>添加第一个产品
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Login" class="btn btn-gradient">
+                            <i class="fas fa-sign-in-alt me-2"></i>登录后添加产品
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/Products" class="btn btn-outline-gradient">查看所有产品</a>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Posts Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-header">
+            <h2>最新文章</h2>
+            <p>阅读社区成员分享的最新见解和故事</p>
+        </div>
+        
+        <div class="row">
+            @if (ViewBag.LatestPosts != null)
+            {
+                @foreach (var post in ViewBag.LatestPosts)
+                {
+                    // 获取帖子主图
+                    string? mainImage = null;
+                    if (ViewBag.PostMainImages != null)
+                    {
+                        var imageDict = (Dictionary<int, string>)ViewBag.PostMainImages;
+                        imageDict.TryGetValue(post.Id, out mainImage);
+                    }
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="post-card card h-100">
+                            <div class="post-image" style="height: 200px; overflow: hidden; background: #f8f9fa;">
+                                @if (!string.IsNullOrEmpty(mainImage))
+                                {
+                                    <img src="@mainImage" alt="@post.Title" style="width: 100%; height: 100%; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                        <i class="fas fa-image fa-3x"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@post.Title</h5>
+                                <div class="post-meta">
+                                    <i class="fas fa-user"></i> @(post.Author?.DisplayName ?? post.Author?.Email ?? "未知")
+                                    <i class="fas fa-calendar ms-3"></i> @post.CreatedAt.ToString("yyyy-MM-dd")
+                                </div>
+                                <p class="card-text">
+                                    @(post.Content.Length > 100 ? post.Content.Substring(0, 100) + "..." : post.Content)
+                                </p>
+                                <a href="/Posts/Details/@post.Id" class="btn btn-outline-gradient">阅读全文</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">暂无文章</p>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a href="/Posts/Create" class="btn btn-gradient">
+                            <i class="fas fa-plus me-2"></i>发布第一篇文章
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Login" class="btn btn-gradient">
+                            <i class="fas fa-sign-in-alt me-2"></i>登录后发布文章
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/Posts" class="btn btn-gradient">查看所有文章</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-header">
+            <h2>为什么选择 MiniShare</h2>
+            <p>我们提供简单易用的平台，让分享变得轻松愉快</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <i class="fas fa-share-alt fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">轻松分享</h5>
+                        <p class="card-text">简单直观的界面，让您轻松分享产品和文章，无需任何技术知识。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">活跃社区</h5>
+                        <p class="card-text">加入我们的活跃社区，与志同道合的人交流，获取灵感和反馈。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">安全可靠</h5>
+                        <p class="card-text">我们采用先进的安全技术，保护您的数据和隐私，让您无忧分享。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

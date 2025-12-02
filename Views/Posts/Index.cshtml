@@ -1,0 +1,152 @@
+@model List<MiniShare.Models.Post>
+@{
+    ViewData["Title"] = "帖子列表";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">帖子列表</h1>
+        <a href="/Posts/Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>发帖
+        </a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container mb-4">
+        <input type="text" id="searchInput" class="form-control" placeholder="搜索帖子标题或内容..." value="@ViewBag.Keyword">
+        <button class="btn btn-outline-primary" id="searchBtn">
+            <i class="fas fa-search"></i> 搜索
+        </button>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="row" id="postsContainer">
+        @if (Model != null && Model.Count > 0)
+        {
+            @foreach (var p in Model)
+            {
+                // 获取帖子主图
+                string? mainImage = null;
+                if (ViewBag.PostMainImages != null)
+                {
+                    var imageDict = (Dictionary<int, string>)ViewBag.PostMainImages;
+                    imageDict.TryGetValue(p.Id, out mainImage);
+                }
+                
+                <div class="col-md-6 col-lg-4 mb-4 post-item" data-title="@p.Title" data-content="@(p.Content ?? "")">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Post Image -->
+                        @if (!string.IsNullOrEmpty(mainImage))
+                        {
+                            <div class="post-image-container" style="height: 200px; overflow: hidden;">
+                                <img src="@mainImage" 
+                                     class="card-img-top" 
+                                     alt="@p.Title" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="post-image-container d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-image fa-3x mb-2"></i>
+                                    <p class="mb-0 small">暂无图片</p>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@p.Title</h5>
+                            <div class="text-muted mb-2">
+                                <small>
+                                    <i class="fas fa-user"></i> @(p.Author?.DisplayName ?? p.Author?.Email ?? "未知")
+                                    <i class="fas fa-calendar ms-2"></i> @p.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
+                                </small>
+                            </div>
+                            <p class="card-text flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                @((p.Content?.Length > 150 ? p.Content.Substring(0, 150) + "..." : p.Content) ?? "暂无内容")
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                <a href="/Posts/Details/@p.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>详情
+                                </a>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-outline-danger like-btn" data-id="@p.Id">
+                                        <i class="far fa-heart"></i>
+                                        <span class="like-count">@p.LikeCount</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-comments fa-4x text-muted"></i>
+                </div>
+                <h3 class="text-muted">暂无帖子</h3>
+                <p class="text-muted mb-4">还没有任何帖子，快来发布第一个帖子吧！</p>
+                <a href="/Posts/Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>发帖
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $("#searchBtn").click(function() {
+            performSearch();
+        });
+        
+        $("#searchInput").keyup(function(e) {
+            if (e.keyCode === 13) {
+                performSearch();
+            } else {
+                // Live search
+                let searchTerm = $(this).val().toLowerCase();
+                $(".post-item").each(function() {
+                    let title = $(this).data("title").toLowerCase();
+                    let content = $(this).data("content").toLowerCase();
+                    
+                    if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+        });
+        
+        function performSearch() {
+            let searchTerm = $("#searchInput").val();
+            window.location.href = "/Posts/Search?keyword=" + encodeURIComponent(searchTerm);
+        }
+        
+        // Like functionality
+        $(".like-btn").click(function() {
+            let postId = $(this).data("id");
+            let likeCount = $(this).find(".like-count");
+            let heartIcon = $(this).find("i");
+            
+            $.post('/Posts/Like', { id: postId })
+                .done(function(resp) {
+                    if (resp && resp.success) {
+                        likeCount.text(resp.likeCount);
+                        if (resp.liked) {
+                            heartIcon.removeClass("far").addClass("fas");
+                        } else {
+                            heartIcon.removeClass("fas").addClass("far");
+                        }
+                    }
+                });
+        });
+    });
+</script>

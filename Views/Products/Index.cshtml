@@ -1,0 +1,208 @@
+@model List<MiniShare.Models.Product>
+@{    ViewData["Title"] = "商品列表";}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="display-5 fw-bold">商品列表</h1>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane me-2"></i>提交商品申请
+        </a>
+    </div>
+
+    @if (TempData["ProductRequestSubmitted"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-5" role="alert">
+            @TempData["ProductRequestSubmitted"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search and Sort Section -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-6">
+            <div class="input-group input-group-lg">
+                <input type="text" id="searchInput" class="form-control rounded-pill-start" placeholder="搜索商品名称...">
+                <button class="btn btn-outline-primary rounded-pill-end" type="button" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <select class="form-select form-select-lg rounded-pill" id="sortOptions">
+                <option value="default">默认排序</option>
+                <option value="priceLow">价格从低到高</option>
+                <option value="priceHigh">价格从高到低</option>
+                <option value="name">按名称排序</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row" id="productsContainer">
+        @if (Model != null && Model.Count > 0)
+        {
+            @foreach (var p in Model)
+            {
+                <div class="col-md-4 mb-5 product-item" data-name="@p.Name" data-price="@p.Price">
+                    <div class="product-card card h-100 shadow-sm overflow-hidden">
+                        <!-- Product Image -->
+                        <div class="product-image-container position-relative">
+                            @{
+                                // 获取商品首图
+                                string? mainImage = null;
+                                if (ViewBag.ProductMainImages != null)
+                                {
+                                    var imageDict = (Dictionary<int, string>)ViewBag.ProductMainImages;
+                                    imageDict.TryGetValue(p.Id, out mainImage);
+                                }
+                            }
+                            @if (!string.IsNullOrEmpty(mainImage))
+                            {
+                                <img src="@mainImage" 
+                                     class="product-image card-img-top" 
+                                     alt="@p.Name" 
+                                     style="height: 250px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 250px;">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-image fa-3x mb-2"></i>
+                                        <p class="mb-0">暂无图片</p>
+                                    </div>
+                                </div>
+                            }
+                            <div class="product-overlay position-absolute top-0 left-0 w-100 h-100 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 d-flex align-items-center justify-content-center opacity-0 hover:opacity-100">
+                                <a asp-controller="ProductDetails" asp-action="Index" asp-route-id="@p.Id" class="btn btn-light btn-lg me-2">
+                                    <i class="fas fa-eye me-1"></i> 查看详情
+                                </a>
+                                <button class="btn btn-primary btn-lg add-to-cart" data-id="@p.Id">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Product Info -->
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fs-5 fw-bold">@p.Name</h5>
+                            <p class="card-text text-muted flex-grow-1 mb-4">
+                                @(p.Description?.Length > 100 ? p.Description.Substring(0, 100) + "..." : p.Description ?? "暂无描述")
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <div class="h4 text-primary mb-0">￥@p.Price.ToString("F2")</div>
+                                <div class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    @p.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-10">
+                <div class="mb-5">
+                    <i class="fas fa-box-open fa-6x text-muted"></i>
+                </div>
+                <h3 class="text-muted mb-3">暂无商品</h3>
+                <p class="text-muted mb-5">还没有任何商品，快来提交申请，让管理员帮您上架吧！</p>
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane me-2"></i>提交商品申请
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $("#searchBtn").click(function() {
+                performSearch();
+            });
+            
+            $("#searchInput").keyup(function(e) {
+                if (e.keyCode === 13) {
+                    performSearch();
+                } else {
+                    // Live search
+                    let searchTerm = $(this).val().toLowerCase();
+                    $(".product-item").each(function() {
+                        let productName = $(this).data("name").toLowerCase();
+                        if (productName.includes(searchTerm)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+            
+            function performSearch() {
+                let searchTerm = $("#searchInput").val();
+                window.location.href = "/Products?search=" + encodeURIComponent(searchTerm);
+            }
+            
+            // Sort functionality
+            $("#sortOptions").change(function() {
+                let sortValue = $(this).val();
+                sortProducts(sortValue);
+            });
+            
+            function sortProducts(sortType) {
+                let container = $("#productsContainer");
+                let products = $(".product-item").toArray();
+                
+                products.sort(function(a, b) {
+                    let aVal, bVal;
+                    
+                    switch(sortType) {
+                        case "priceLow":
+                            aVal = parseFloat($(a).data("price"));
+                            bVal = parseFloat($(b).data("price"));
+                            return aVal - bVal;
+                        case "priceHigh":
+                            aVal = parseFloat($(a).data("price"));
+                            bVal = parseFloat($(b).data("price"));
+                            return bVal - aVal;
+                        case "name":
+                            aVal = $(a).data("name").toLowerCase();
+                            bVal = $(b).data("name").toLowerCase();
+                            return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+                        case "default":
+                        default:
+                            return 0;
+                    }
+                });
+                
+                container.empty();
+                products.forEach(function(product) {
+                    container.append(product);
+                });
+            }
+            
+            // Add to cart functionality
+            $(".add-to-cart").click(function() {
+                let productId = $(this).data("id");
+                showNotification("商品已添加到购物车！");
+            });
+            
+            function showNotification(message) {
+                let notification = $("<div class='alert alert-success position-fixed' style='top: 80px; right: 20px; z-index: 1050; min-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);'>" + 
+                                  "<i class='fas fa-check-circle me-2'></i>" + message + 
+                                  "</div>");
+                
+                $("body").append(notification);
+                
+                setTimeout(function() {
+                    notification.fadeOut(500, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,350 @@
+@model MiniShare.Models.Post
+@{
+    ViewData["Title"] = Model.Title;
+    var isLiked = ViewBag.IsLiked as bool? ?? false;
+    var isFavorited = ViewBag.IsFavorited as bool? ?? false;
+    var currentUserId = ViewBag.CurrentUserId as int?;
+    var images = Model.Images?.OrderBy(img => img.SortOrder).ToList() ?? new List<MiniShare.Models.PostImage>();
+    var comments = Model.Comments?.OrderByDescending(c => c.CreatedAt).ToList() ?? new List<MiniShare.Models.Comment>();
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">首页</a></li>
+            <li class="breadcrumb-item"><a href="/Posts">帖子列表</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    @if (TempData["CommentSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["CommentSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["CommentError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["CommentError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Post Header -->
+    <div class="post-header mb-4">
+        <h1 class="display-5 fw-bold mb-3">@Model.Title</h1>
+        <div class="d-flex align-items-center gap-3 text-muted mb-3">
+            <div>
+                <i class="fas fa-user me-1"></i>
+                @(Model.Author?.DisplayName ?? Model.Author?.Email ?? "未知用户")
+            </div>
+            <div>
+                <i class="fas fa-calendar me-1"></i>
+                @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Images -->
+    @if (images.Any())
+    {
+        <div class="post-images mb-4">
+            <div class="main-image-container position-relative mb-3" style="background: #f8f9fa; border-radius: 8px; overflow: hidden; min-height: 500px; display: flex; align-items: center; justify-content: center;">
+                <img id="mainPostImage" 
+                     src="@images.First().Url" 
+                     alt="@Model.Title" 
+                     class="img-fluid" 
+                     style="max-height: 600px; width: 100%; object-fit: contain;">
+                
+                @if (images.Count > 1)
+                {
+                    <button class="image-nav-btn prev-btn btn btn-primary rounded-circle position-absolute" 
+                            style="top: 50%; left: 15px; transform: translateY(-50%); z-index: 10; width: 50px; height: 50px; opacity: 0.8;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="image-nav-btn next-btn btn btn-primary rounded-circle position-absolute" 
+                            style="top: 50%; right: 15px; transform: translateY(-50%); z-index: 10; width: 50px; height: 50px; opacity: 0.8;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                }
+            </div>
+            
+            @if (images.Count > 1)
+            {
+                <div class="thumbnail-container d-flex gap-2 overflow-x-auto pb-2">
+                    @foreach (var image in images)
+                    {
+                        <div class="thumbnail-item flex-shrink-0" style="cursor: pointer; border: 2px solid transparent; border-radius: 4px; padding: 2px;">
+                            <img src="@image.Url" 
+                                 alt="@Model.Title" 
+                                 class="thumbnail-image img-thumbnail" 
+                                 data-image-url="@image.Url"
+                                 style="width: 100px; height: 100px; object-fit: cover;">
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Post Content -->
+    <div class="post-content mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="post-text" style="line-height: 2; white-space: pre-wrap;">@Model.Content</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Actions -->
+    <div class="post-actions mb-4 d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-danger like-btn @(isLiked ? "active" : "")" data-post-id="@Model.Id">
+            <i class="fas fa-heart @(isLiked ? "" : "far")"></i>
+            <span class="like-count">@Model.LikeCount</span>
+        </button>
+        
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <button class="btn btn-outline-warning favorite-btn @(isFavorited ? "active" : "")" data-post-id="@Model.Id">
+                <i class="fas fa-star @(isFavorited ? "" : "far")"></i>
+                <span>收藏</span>
+            </button>
+        }
+        
+        <button class="btn btn-outline-primary" onclick="sharePost()">
+            <i class="fas fa-share-alt"></i>
+            <span>分享</span>
+        </button>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-section">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>评论 (@comments.Count)
+                </h5>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCommentModal">
+                        <i class="fas fa-plus me-1"></i>发表评论
+                    </button>
+                }
+                else
+                {
+                    <a href="/Identity/Account/Login" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-1"></i>登录后评论
+                    </a>
+                }
+            </div>
+            <div class="card-body">
+                @if (comments.Any())
+                {
+                    @foreach (var comment in comments)
+                    {
+                        <div class="comment-item mb-4 pb-4 border-bottom">
+                            <div class="d-flex gap-3">
+                                <!-- Avatar -->
+                                <div class="comment-avatar">
+                                    <img src="@(comment.User?.AvatarUrl ?? "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(comment.AuthorName))" 
+                                         alt="用户头像" 
+                                         class="rounded-circle" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                </div>
+                                
+                                <!-- Comment Content -->
+                                <div class="comment-content flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="comment-author fw-bold">@comment.AuthorName</div>
+                                        <div class="comment-time text-muted small">
+                                            @comment.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Comment Text -->
+                                    <div class="comment-text" style="white-space: pre-wrap;">
+                                        @comment.Content
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <p>暂无评论，快来发表第一条评论吧！</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>返回列表
+        </a>
+    </div>
+</div>
+
+<!-- Add Comment Modal -->
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="modal fade" id="addCommentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">发表评论</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="Comment" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="postId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label for="commentContent" class="form-label fw-bold">评论内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="commentContent" name="content" rows="5" placeholder="请输入您的评论..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">提交评论</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 图片数组
+            const images = [
+                @foreach (var img in images)
+                {
+                    @:"@img.Url",
+                }
+            ];
+            
+            let currentImageIndex = 0;
+            
+            // 下一张图片
+            $('.next-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                $('#mainPostImage').attr('src', images[currentImageIndex]);
+                updateThumbnailActive();
+            });
+            
+            // 上一张图片
+            $('.prev-btn').click(function() {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                $('#mainPostImage').attr('src', images[currentImageIndex]);
+                updateThumbnailActive();
+            });
+            
+            // 缩略图点击
+            $('.thumbnail-image').click(function() {
+                const imageUrl = $(this).data('image-url');
+                currentImageIndex = images.indexOf(imageUrl);
+                $('#mainPostImage').attr('src', imageUrl);
+                updateThumbnailActive();
+            });
+            
+            // 更新缩略图激活状态
+            function updateThumbnailActive() {
+                $('.thumbnail-item').removeClass('border-primary');
+                $('.thumbnail-item').eq(currentImageIndex).addClass('border-primary');
+            }
+            
+            // 初始化激活状态
+            if (images.length > 0) {
+                updateThumbnailActive();
+            }
+            
+            // 点赞功能
+            $('.like-btn').click(function() {
+                const postId = $(this).data('post-id');
+                const btn = $(this);
+                const icon = btn.find('i');
+                const countSpan = btn.find('.like-count');
+                
+                $.post('/Posts/Like', { id: postId })
+                    .done(function(resp) {
+                        if (resp && resp.success) {
+                            countSpan.text(resp.likeCount);
+                            if (resp.liked) {
+                                icon.removeClass('far').addClass('fas');
+                                btn.addClass('active');
+                            } else {
+                                icon.removeClass('fas').addClass('far');
+                                btn.removeClass('active');
+                            }
+                        }
+                    })
+                    .fail(function() {
+                        alert('操作失败，请先登录');
+                    });
+            });
+            
+            // 收藏功能
+            $('.favorite-btn').click(function() {
+                const postId = $(this).data('post-id');
+                const btn = $(this);
+                const icon = btn.find('i');
+                
+                $.post('/Posts/Favorite', { id: postId })
+                    .done(function(resp) {
+                        if (resp && resp.success) {
+                            if (resp.favorited) {
+                                icon.removeClass('far').addClass('fas');
+                                btn.addClass('active');
+                            } else {
+                                icon.removeClass('fas').addClass('far');
+                                btn.removeClass('active');
+                            }
+                        }
+                    })
+                    .fail(function() {
+                        alert('操作失败，请先登录');
+                    });
+            });
+        });
+        
+        function sharePost() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '@Model.Title',
+                    text: '@Model.Content.Substring(0, Math.Min(100, Model.Content.Length))...',
+                    url: window.location.href
+                });
+            } else {
+                // 复制链接到剪贴板
+                navigator.clipboard.writeText(window.location.href).then(function() {
+                    alert('链接已复制到剪贴板');
+                });
+            }
+        }
+    </script>
+    <style>
+        .thumbnail-item:hover {
+            border-color: #0d6efd !important;
+        }
+        .thumbnail-item.border-primary {
+            border-color: #0d6efd !important;
+        }
+        .like-btn.active, .favorite-btn.active {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+    </style>
+}

@@ -1,0 +1,41 @@
+@model List<MiniShare.Models.Order>
+@{
+    ViewData["Title"] = "我的订单";
+}
+<h2>我的订单</h2>
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">暂无订单</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>商品</th>
+                <th>时间</th>
+                <th>状态</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.Product?.Name</td>
+                <td>@o.CreatedAt.ToLocalTime()</td>
+                <td>@o.Status</td>
+                <td>
+                    @if (o.Status == MiniShare.Models.OrderStatus.Pending)
+                    {
+                        <form asp-action="MarkPaid" method="post">
+                            <input type="hidden" name="id" value="@o.Id" />
+                            <button class="btn btn-success btn-sm">标记已支付</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
