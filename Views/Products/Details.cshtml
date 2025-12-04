@@ -116,13 +116,17 @@
                             <i class="fas fa-cart-plus me-2"></i>加入购物车
                         </button>
                     </form>
-                    <button class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-heart"></i>
+                    <button class="btn btn-outline-danger btn-lg favorite-btn" data-product-id="@Model.Id">
+                        <i class="far fa-heart"></i>
                     </button>
                     <button class="btn btn-outline-primary btn-lg">
                         <i class="fas fa-share-alt"></i>
                     </button>
                 </div>
+
+                <form id="favoriteTokenForm" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                </form>
                 
                 <!-- Product Stats -->
                 <div class="product-stats d-flex flex-wrap gap-4 text-muted">
@@ -439,6 +443,95 @@
                 $('#addCommentModal').modal('hide');
                 $(this)[0].reset();
             });
+            
+            // Favorite Button Functionality
+            $('.favorite-btn').click(function() {
+                const button = $(this);
+                const productId = button.data('product-id');
+                
+                // Add loading state
+                button.prop('disabled', true);
+                button.find('i').addClass('fas fa-spinner fa-spin');
+                
+                // Get anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
+                // Send AJAX request to toggle favorite
+                $.ajax({
+                    url: '/Collections/ToggleProductFavorite',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: {
+                        productId: productId
+                    },
+                    success: function(response) {
+                        // Update button appearance based on response
+                        if (response.isFavorite) {
+                            button.removeClass('btn-outline-primary').addClass('btn-danger');
+                            button.find('i').addClass('fas').removeClass('far');
+                        } else {
+                            button.removeClass('btn-danger').addClass('btn-outline-primary');
+                            button.find('i').removeClass('fas').addClass('far');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to toggle favorite:', error);
+                        // Check if user is unauthorized
+                        if (xhr.status === 401) {
+                            // Redirect to login page
+                            window.location.href = '/Login/Index?ReturnUrl=' + encodeURIComponent(window.location.href);
+                        } else {
+                            alert('操作失败，请稍后重试！');
+                        }
+                    },
+                    complete: function() {
+                        // Remove loading state
+                        button.prop('disabled', false);
+                        button.find('i').removeClass('fa-spinner fa-spin');
+                    }
+                });
+            });
+            
+            // Check initial favorite state on page load
+            function checkFavoriteState() {
+                const button = $('.favorite-btn');
+                const productId = button.data('product-id');
+                
+                // Get anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
+                // Send AJAX request to check favorite state
+                $.ajax({
+                    url: '/Collections/CheckProductFavorite',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: {
+                        productId: productId
+                    },
+                    success: function(response) {
+                        // Update button appearance based on response
+                        if (response.isFavorite) {
+                            button.removeClass('btn-outline-primary').addClass('btn-danger');
+                            button.find('i').addClass('fas').removeClass('far');
+                        } else {
+                            button.removeClass('btn-danger').addClass('btn-outline-primary');
+                            button.find('i').removeClass('fas').addClass('far');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to check favorite state:', error);
+                    }
+                });
+            }
+            
+            // Run checkFavoriteState if user is authenticated
+            if ($('body').hasClass('authenticated')) {
+                checkFavoriteState();
+            }
         });
     </script>
 }

@@ -109,8 +109,8 @@
         
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <button class="btn btn-outline-warning favorite-btn @(isFavorited ? "active" : "")" data-post-id="@Model.Id">
-                <i class="fas fa-star @(isFavorited ? "" : "far")"></i>
+            <button class="btn btn-outline-danger favorite-btn @(isFavorited ? "active" : "")" data-post-id="@Model.Id">
+                <i class="@(isFavorited ? "fas" : "far") fa-heart"></i>
                 <span>收藏</span>
             </button>
         }
@@ -330,9 +330,11 @@
                         if (resp && resp.success) {
                             if (resp.favorited) {
                                 icon.removeClass('far').addClass('fas');
+                                btn.removeClass('btn-outline-danger').addClass('btn-danger');
                                 btn.addClass('active');
                             } else {
                                 icon.removeClass('fas').addClass('far');
+                                btn.removeClass('btn-danger').addClass('btn-outline-danger');
                                 btn.removeClass('active');
                             }
                         }
@@ -365,9 +367,7 @@
         .thumbnail-item.border-primary {
             border-color: #0d6efd !important;
         }
-        .like-btn.active, .favorite-btn.active {
-            background-color: var(--bs-primary);
-            color: white;
-        }
+        .like-btn.active { background-color: var(--bs-primary); color: white; }
+        .favorite-btn.active { background-color: var(--bs-danger); color: white; }
     </style>
 }

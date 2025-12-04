@@ -36,7 +36,7 @@ else
                             <input type="hidden" name="id" value="@p.Id" />
                             <button type="submit" class="btn btn-sm btn-outline-danger me-1">删除</button>
                         </form>
-                        <button type="button" class="btn btn-sm btn-outline-secondary add-fav-btn" data-id="@p.Id">
+                        <button type="button" class="btn btn-sm btn-outline-danger fav-btn" data-id="@p.Id">
                             <i class="far fa-heart"></i> 收藏
                         </button>
                     </div>
@@ -58,6 +58,7 @@ else
 }
 
 @section Scripts {
+    <form id="favTokenForm" method="post" class="d-none">@Html.AntiForgeryToken()</form>
     <script>
         $(function(){
             $('#selectAll').on('change', function(){ $('.item-checkbox').prop('checked', this.checked).trigger('change'); });
@@ -78,24 +79,41 @@ else
                 $('#selectAll').prop('checked', all >0 && checked === all);
             }
 
-            $('.add-fav-btn').click(function(){
+            var token = $('#favTokenForm input[name="__RequestVerificationToken"]').val();
+            function setBtnState(btn, isFav){
+                if(isFav){
+                    btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                    btn.find('i').removeClass('far').addClass('fas');
+                } else {
+                    btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                    btn.find('i').removeClass('fas').addClass('far');
+                }
+            }
+
+            $('.fav-btn').each(function(){
                 var btn = $(this);
                 var id = btn.data('id');
-                $.post('/Products/AddToFavorites', { id: id })
-                .done(function(resp){
-                    if(resp && resp.success){
-                        if(resp.added){
-                            btn.removeClass('btn-outline-secondary').addClass('btn-primary');
-                            btn.find('i').removeClass('far').addClass('fas');
-                        } else {
-                            btn.removeClass('btn-primary').addClass('btn-outline-secondary');
-                            btn.find('i').removeClass('fas').addClass('far');
-                        }
-                    } else {
-                        alert('操作失败，请先登录');
-                    }
-                })
-                .fail(function(){
+                $.ajax({
+                    url:'/Collections/CheckProductFavorite',
+                    type:'POST',
+                    headers:{'RequestVerificationToken': token},
+                    data:{ productId: id }
+                }).done(function(resp){
+                    setBtnState(btn, !!resp.isFavorite);
+                });
+            });
+
+            $('.fav-btn').click(function(){
+                var btn = $(this);
+                var id = btn.data('id');
+                $.ajax({
+                    url:'/Collections/ToggleProductFavorite',
+                    type:'POST',
+                    headers:{'RequestVerificationToken': token},
+                    data:{ productId: id }
+                }).done(function(resp){
+                    setBtnState(btn, !!resp.isFavorite);
+                }).fail(function(){
                     alert('操作失败，请先登录');
                 });
             });

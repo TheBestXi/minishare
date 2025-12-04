@@ -79,6 +79,9 @@
                                 <button class="btn btn-primary btn-lg add-to-cart" data-id="@p.Id">
                                     <i class="fas fa-cart-plus"></i>
                                 </button>
+                                <button class="btn btn-outline-primary btn-lg favorite-btn" data-product-id="@p.Id">
+                                    <i class="far fa-heart"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -190,9 +193,64 @@
                 showNotification("商品已添加到购物车！");
             });
             
-            function showNotification(message) {
-                let notification = $("<div class='alert alert-success position-fixed' style='top: 80px; right: 20px; z-index: 1050; min-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);'>" + 
-                                  "<i class='fas fa-check-circle me-2'></i>" + message + 
+            // Favorite Button Functionality
+            $(document).on('click', '.favorite-btn', function() {
+                const button = $(this);
+                const productId = button.data('product-id');
+                
+                // Add loading state
+                button.prop('disabled', true);
+                button.find('i').addClass('fas fa-spinner fa-spin');
+                
+                // Get anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
+                // Send AJAX request to toggle favorite
+                $.ajax({
+                    url: '/Collections/ToggleProductFavorite',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    data: {
+                        productId: productId
+                    },
+                    success: function(response) {
+                        // Update button appearance based on response
+                        if (response.isFavorite) {
+                            button.removeClass('btn-outline-primary').addClass('btn-danger');
+                            button.find('i').removeClass('far').addClass('fas');
+                            showNotification('商品已添加到收藏！');
+                        } else {
+                            button.removeClass('btn-danger').addClass('btn-outline-primary');
+                            button.find('i').removeClass('fas').addClass('far');
+                            showNotification('商品已从收藏移除！');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to toggle favorite:', error);
+                        // Check if user is unauthorized
+                        if (xhr.status === 401) {
+                            // Redirect to login page
+                            window.location.href = '/Login/Index?ReturnUrl=' + encodeURIComponent(window.location.href);
+                        } else {
+                            showNotification('操作失败，请稍后重试！', 'danger');
+                        }
+                    },
+                    complete: function() {
+                        // Remove loading state
+                        button.prop('disabled', false);
+                        button.find('i').removeClass('fa-spinner fa-spin');
+                    }
+                });
+            });
+            
+            function showNotification(message, type = 'success') {
+                let alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                let iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                
+                let notification = $("<div class='alert " + alertClass + " position-fixed' style='top: 80px; right: 20px; z-index: 1050; min-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);'>" + 
+                                  "<i class='fas " + iconClass + " me-2'></i>" + message + 
                                   "</div>");
                 
                 $("body").append(notification);

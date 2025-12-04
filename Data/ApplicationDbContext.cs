@@ -18,9 +18,10 @@ namespace MiniShare.Data
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<ProductRequest> ProductRequests => Set<ProductRequest>();
         public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+        public DbSet<ProductFavorite> ProductFavorites => Set<ProductFavorite>();
+        public DbSet<PostFavorite> PostFavorites => Set<PostFavorite>();
         public DbSet<ProductComment> ProductComments => Set<ProductComment>();
         public DbSet<PostLike> PostLikes => Set<PostLike>();
-        public DbSet<PostFavorite> PostFavorites => Set<PostFavorite>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -67,6 +68,19 @@ namespace MiniShare.Data
                 .HasOne(img => img.ProductRequest)
                 .WithMany()
                 .HasForeignKey(img => img.ProductRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ProductFavorite relationships
+            builder.Entity<ProductFavorite>()
+                .HasOne(pf => pf.User)
+                .WithMany()
+                .HasForeignKey(pf => pf.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProductFavorite>()
+                .HasOne(pf => pf.Product)
+                .WithMany()
+                .HasForeignKey(pf => pf.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ProductComment>()

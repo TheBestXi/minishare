@@ -1,0 +1,261 @@
+@{ ViewData["Title"] = "我的收藏"; }
+
+<div class="container py-4">
+    <h1 class="display-5 fw-bold mb-4">
+        <i class="fas fa-heart me-2 text-danger"></i>我的收藏
+    </h1>
+
+    <!-- 标签页导航 -->
+    <ul class="nav nav-tabs mb-4" id="collectionTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(ViewData["ActiveTab"] as string == "products" ? "active" : "")" 
+               id="products-tab" 
+               data-bs-toggle="tab" 
+               href="#products" 
+               role="tab" 
+               aria-controls="products" 
+               aria-selected="@(ViewData["ActiveTab"] as string == "products" ? "true" : "false")">
+                <i class="fas fa-shopping-bag me-1"></i>商品收藏
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(ViewData["ActiveTab"] as string == "posts" ? "active" : "")" 
+               id="posts-tab" 
+               data-bs-toggle="tab" 
+               href="#posts" 
+               role="tab" 
+               aria-controls="posts" 
+               aria-selected="@(ViewData["ActiveTab"] as string == "posts" ? "true" : "false")">
+                <i class="fas fa-newspaper me-1"></i>帖子收藏
+            </a>
+        </li>
+    </ul>
+
+    <!-- 标签页内容 -->
+    <div class="tab-content" id="collectionTabsContent">
+        <!-- 商品收藏 -->
+        <div class="tab-pane fade @(ViewData["ActiveTab"] as string == "products" ? "show active" : "")" 
+             id="products" 
+             role="tabpanel" 
+             aria-labelledby="products-tab">
+            
+            <div class="row">
+                @{ 
+                    var productCollections = ViewData["ProductCollections"] as List<ProductFavorite>;
+                    if (productCollections != null && productCollections.Any())
+                    {
+                        foreach (var collection in productCollections)
+                        {
+                            var product = collection.Product;
+                            if (product != null)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <!-- 商品图片 -->
+                                        <div class="product-image-container" style="height: 200px; overflow: hidden;">
+                                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="product-link">
+                                                <img src="https://picsum.photos/seed/product-@product.Id/300/200.jpg" 
+                                                     alt="@product.Name" 
+                                                     class="card-img-top" 
+                                                     style="height: 100%; object-fit: cover;">
+                                            </a>
+                                        </div>
+                                        
+                                        <div class="card-body">
+                                            <!-- 商品名称 -->
+                                            <h5 class="card-title product-name">
+                                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="text-decoration-none text-dark">
+                                                    @product.Name
+                                                </a>
+                                            </h5>
+                                            
+                                            <!-- 价格 -->
+                                            <div class="product-price h6 text-primary mb-2">
+                                                ￥@product.Price.ToString("F2")
+                                            </div>
+                                            
+                                            <!-- 收藏信息 -->
+                                            <div class="text-muted small mb-3">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                收藏于：@collection.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                            </div>
+                                            
+                                            <!-- 操作按钮 -->
+                                            <div class="d-flex gap-2">
+                                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="btn btn-primary btn-sm flex-grow-1">
+                                                    <i class="fas fa-eye me-1"></i>查看详情
+                                                </a>
+                                                <form asp-controller="Collections" asp-action="RemoveFromFavorites" asp-route-type="products" asp-route-id="@product.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-heart-broken me-1"></i>取消收藏
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info text-center py-5">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <h4>暂无商品收藏</h4>
+                                <p class="mb-0">快去浏览商品并收藏你喜欢的商品吧！</p>
+                                <a asp-controller="Products" asp-action="Index" class="btn btn-primary mt-3">
+                                    <i class="fas fa-shopping-bag me-1"></i>浏览商品
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- 帖子收藏 -->
+        <div class="tab-pane fade @(ViewData["ActiveTab"] as string == "posts" ? "show active" : "")" 
+             id="posts" 
+             role="tabpanel" 
+             aria-labelledby="posts-tab">
+            
+            <div class="row">
+                @{ 
+                    var postCollections = ViewData["PostCollections"] as List<PostFavorite>;
+                    if (postCollections != null && postCollections.Any())
+                    {
+                        foreach (var collection in postCollections)
+                        {
+                            var post = collection.Post;
+                            if (post != null)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <!-- 帖子封面图 -->
+                                        <div class="post-image-container" style="height: 180px; overflow: hidden;">
+                                            @{ 
+                                                // 获取帖子首图
+                                                var firstImage = post.Images?.FirstOrDefault();
+                                            }
+                                            <a asp-controller="Posts" asp-action="Details" asp-route-id="@post.Id" class="post-link">
+                                                <img src="@(firstImage != null ? firstImage.Url : $"https://picsum.photos/seed/post-{post.Id}/300/180.jpg")" 
+                                                     alt="@post.Title" 
+                                                     class="card-img-top" 
+                                                     style="height: 100%; object-fit: cover;">
+                                            </a>
+                                        </div>
+                                        
+                                        <div class="card-body">
+                                            <!-- 帖子标题 -->
+                                            <h5 class="card-title post-title">
+                                                <a asp-controller="Posts" asp-action="Details" asp-route-id="@post.Id" class="text-decoration-none text-dark">
+                                                    @post.Title
+                                                </a>
+                                            </h5>
+                                            
+                                            <!-- 作者信息 -->
+                                            <div class="d-flex align-items-center text-muted small mb-2">
+                                                <img src="@(post.Author?.AvatarUrl ?? $"https://picsum.photos/seed/user-{post.AuthorId}/50/50.jpg")" 
+                                                     alt="@post.Author?.DisplayName" 
+                                                     class="rounded-circle me-2" 
+                                                     style="width: 25px; height: 25px; object-fit: cover;">
+                                                <span>@(post.Author?.DisplayName ?? "匿名用户")</span>
+                                            </div>
+                                            
+                                            <!-- 收藏信息 -->
+                                            <div class="text-muted small mb-3">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                收藏于：@collection.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                            </div>
+                                            
+                                            <!-- 操作按钮 -->
+                                            <div class="d-flex gap-2">
+                                                <a asp-controller="Posts" asp-action="Details" asp-route-id="@post.Id" class="btn btn-primary btn-sm flex-grow-1">
+                                                    <i class="fas fa-eye me-1"></i>查看详情
+                                                </a>
+                                                <form asp-controller="Collections" asp-action="RemoveFromFavorites" asp-route-type="posts" asp-route-id="@post.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-heart-broken me-1"></i>取消收藏
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info text-center py-5">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <h4>暂无帖子收藏</h4>
+                                <p class="mb-0">快去浏览帖子并收藏你感兴趣的内容吧！</p>
+                                <a asp-controller="Posts" asp-action="Index" class="btn btn-primary mt-3">
+                                    <i class="fas fa-newspaper me-1"></i>浏览帖子
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 样式 -->
+<style>
+    .product-link,
+    .post-link {
+        display: block;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-link:hover,
+    .post-link:hover {
+        transform: scale(1.05);
+    }
+    
+    .product-name,
+    .post-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<!-- 脚本 -->
+@section Scripts {
+    <script>
+        // 当标签页切换时，更新URL参数
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('#collectionTabs a');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    const tabId = e.target.getAttribute('href').substring(1);
+                    const type = tabId === 'products' ? 'products' : 'posts';
+                    
+                    // 更新URL而不刷新页面
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('type', type);
+                    window.history.pushState({}, '', url);
+                });
+            });
+        });
+    </script>
+}
