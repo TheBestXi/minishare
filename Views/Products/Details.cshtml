@@ -117,7 +117,7 @@
                         </button>
                     </form>
                     <button class="btn btn-outline-danger btn-lg favorite-btn" data-product-id="@Model.Id">
-                        <i class="far fa-heart"></i>
+                        <i class="far fa-heart me-2"></i>收藏
                     </button>
                     <button class="btn btn-outline-primary btn-lg">
                         <i class="fas fa-share-alt"></i>
@@ -454,7 +454,7 @@
                 button.find('i').addClass('fas fa-spinner fa-spin');
                 
                 // Get anti-forgery token
-                const token = $('input[name="__RequestVerificationToken"]').val();
+                const token = $('#favoriteTokenForm input[name="__RequestVerificationToken"]').val();
                 
                 // Send AJAX request to toggle favorite
                 $.ajax({
@@ -469,10 +469,10 @@
                     success: function(response) {
                         // Update button appearance based on response
                         if (response.isFavorite) {
-                            button.removeClass('btn-outline-primary').addClass('btn-danger');
+                            button.removeClass('btn-outline-danger').addClass('btn-danger');
                             button.find('i').addClass('fas').removeClass('far');
                         } else {
-                            button.removeClass('btn-danger').addClass('btn-outline-primary');
+                            button.removeClass('btn-danger').addClass('btn-outline-danger');
                             button.find('i').removeClass('fas').addClass('far');
                         }
                     },
@@ -500,7 +500,7 @@
                 const productId = button.data('product-id');
                 
                 // Get anti-forgery token
-                const token = $('input[name="__RequestVerificationToken"]').val();
+                const token = $('#favoriteTokenForm input[name="__RequestVerificationToken"]').val();
                 
                 // Send AJAX request to check favorite state
                 $.ajax({
@@ -515,10 +515,10 @@
                     success: function(response) {
                         // Update button appearance based on response
                         if (response.isFavorite) {
-                            button.removeClass('btn-outline-primary').addClass('btn-danger');
+                            button.removeClass('btn-outline-danger').addClass('btn-danger');
                             button.find('i').addClass('fas').removeClass('far');
                         } else {
-                            button.removeClass('btn-danger').addClass('btn-outline-primary');
+                            button.removeClass('btn-danger').addClass('btn-outline-danger');
                             button.find('i').removeClass('fas').addClass('far');
                         }
                     },
@@ -534,4 +534,8 @@
             }
         });
     </script>
+    <style>
+        .favorite-btn { min-width: 140px; }
+        .btn-outline-danger { border-width: 2px; }
+    </style>
 }
