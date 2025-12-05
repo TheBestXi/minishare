@@ -12,11 +12,13 @@ namespace MiniShare.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IFileUploadService _fileUploadService;
+        private readonly ICartService _cartService;
 
-        public ProductsController(ApplicationDbContext context, IFileUploadService fileUploadService)
+        public ProductsController(ApplicationDbContext context, IFileUploadService fileUploadService, ICartService cartService)
         {
             _context = context;
             _fileUploadService = fileUploadService;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
@@ -71,7 +73,7 @@ namespace MiniShare.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Name,Price,Description")] ProductRequest request,
+            [Bind("Name,Price,Description,ShippingTimeHours,ShippingMethod,ShippingFee")] ProductRequest request,
             List<IFormFile> productImages)
         {
             // 验证表单数据
@@ -147,26 +149,24 @@ namespace MiniShare.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
         public IActionResult AddToCart(int id)
         {
-            var cart = HttpContext.Session.GetString("cart") ?? string.Empty;
-            var items = new List<int>();
-            if (!string.IsNullOrEmpty(cart))
+            _cartService.AddToCart(id);
+            
+            // 如果是 AJAX 请求，返回 Ok()
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                items = cart.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(int.Parse).ToList();
+                return Ok();
             }
-            if (!items.Contains(id)) items.Add(id);
-            HttpContext.Session.SetString("cart", string.Join(',', items));
+            // 否则重定向到购物车页面
             return RedirectToAction(nameof(Cart));
         }
 
         [Authorize]
         public async Task<IActionResult> Cart()
         {
-            var cart = HttpContext.Session.GetString("cart") ?? string.Empty;
-            var ids = string.IsNullOrEmpty(cart) ? Array.Empty<int>() : cart.Split(',').Select(int.Parse).ToArray();
+            var ids = _cartService.GetCartItems().Distinct().ToArray();
             var products = await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync();
 
             // 获取每个商品的首图并传给视图
@@ -205,10 +205,9 @@ namespace MiniShare.Controllers
             if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
             var userId = int.Parse(userIdStr);
 
-            var cart = HttpContext.Session.GetString("cart") ?? string.Empty;
-            var ids = string.IsNullOrEmpty(cart) ? new List<int>() : cart.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(int.Parse).ToList();
+            var ids = _cartService.GetCartItems();
 
-            var toProcess = (selectedIds != null && selectedIds.Length > 0) ? selectedIds.ToList() : ids;
+            var toProcess = (selectedIds != null && selectedIds.Length > 0) ? selectedIds.ToList() : ids.Distinct().ToList();
 
             foreach (var pid in toProcess)
             {
@@ -222,12 +221,11 @@ namespace MiniShare.Controllers
             }
             await _context.SaveChangesAsync();
 
-            // 从购物车中移除已结账的商品a
-            ids = ids.Except(toProcess).ToList();
-            if (ids.Any())
-                HttpContext.Session.SetString("cart", string.Join(',', ids));
-            else
-                HttpContext.Session.Remove("cart");
+            // 从购物车中移除已结账的商品
+            foreach (var pid in toProcess)
+            {
+                _cartService.RemoveFromCart(pid);
+            }
 
             return RedirectToAction(nameof(MyOrders));
         }
@@ -237,17 +235,7 @@ namespace MiniShare.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult RemoveFromCart(int id)
         {
-            var cart = HttpContext.Session.GetString("cart") ?? string.Empty;
-            var items = new List<int>();
-            if (!string.IsNullOrEmpty(cart))
-            {
-                items = cart.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(int.Parse).ToList();
-            }
-            if (items.Contains(id)) items.Remove(id);
-            if (items.Any())
-                HttpContext.Session.SetString("cart", string.Join(',', items));
-            else
-                HttpContext.Session.Remove("cart");
+            _cartService.RemoveFromCart(id);
             return RedirectToAction(nameof(Cart));
         }
 
@@ -270,6 +258,16 @@ namespace MiniShare.Controllers
                 HttpContext.Session.SetString("favorites", string.Join(',', items));
             }
             return Json(new { success = true, added = added, count = items.Count });
+        }
+
+        /// <summary>
+        /// 获取购物车数量（用于AJAX更新）
+        /// </summary>
+        /// <returns>购物车数量</returns>
+        [HttpGet]
+        public IActionResult GetCartCount()
+        {
+            return Json(_cartService.GetCartCount());
         }
 
         [Authorize]

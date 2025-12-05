@@ -1,0 +1,171 @@
+@model List<MiniShare.Models.Product>
+@{    ViewData["Title"] = "结算";
+    var images = ViewBag.ProductImages as IDictionary<int, string>;
+    var totalPrice = ViewBag.TotalPrice as decimal? ?? 0;
+    var totalShippingFee = ViewBag.TotalShippingFee as decimal? ?? 0;
+    var grandTotal = ViewBag.GrandTotal as decimal? ?? 0;
+    var selectedIds = ViewBag.SelectedIds as int[] ?? Array.Empty<int>();
+}
+
+<div class="container py-5">
+    <h1 class="display-5 fw-bold mb-5">结算</h1>
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-4">@TempData["ErrorMessage"]</div>
+    }
+    
+    <form asp-action="ProcessCheckout" method="post" class="needs-validation" novalidate>
+        <!-- 选中的商品ID（隐藏） -->
+        @foreach (var id in selectedIds)
+        {
+            <input type="hidden" name="selectedIds" value="@id" />
+        }
+        
+        <div class="row">
+            <!-- 收货地址 -->
+            <div class="col-lg-6 mb-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">收货信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="shippingAddress" class="form-label fw-bold">收货地址 <span class="text-danger">*</span></label>
+                            <textarea id="shippingAddress" name="shippingAddress" rows="4" class="form-control" required></textarea>
+                            <div class="invalid-feedback">请输入收货地址</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                请确保收货地址准确无误，以便卖家及时发货。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 订单详情 -->
+            <div class="col-lg-6 mb-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">订单详情</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    @foreach (var product in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@(images != null && images.ContainsKey(product.Id) ? images[product.Id] : $"https://picsum.photos/seed/product-{product.Id}/100/100.jpg")" 
+                                                         alt="@product.Name" 
+                                                         class="img-thumbnail me-3" 
+                                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                                    <div>
+                                                        <div class="fw-bold">@product.Name</div>
+                                                        <div class="text-muted small">
+                                                            配送方式：@GetShippingMethodText(product.ShippingMethod)<br />
+                                                            发货时间：@product.ShippingTimeHours 小时内
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end">
+                                                <div>￥@product.Price.ToString("F2")</div>
+                                                @if (product.ShippingFee > 0)
+                                                {
+                                                    <div class="text-muted small">运费：￥@product.ShippingFee.ToString("F2")</div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-muted small">免运费</div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 订单金额 -->
+                        <div class="row mb-3">
+                            <div class="col-6">商品总价</div>
+                            <div class="col-6 text-end">￥@totalPrice.ToString("F2")</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">运费总计</div>
+                            <div class="col-6 text-end">￥@totalShippingFee.ToString("F2")</div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-6 h5 fw-bold">订单总计</div>
+                            <div class="col-6 text-end h5 text-danger fw-bold">￥@grandTotal.ToString("F2")</div>
+                        </div>
+                        
+                        <!-- 提交订单按钮 -->
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="fas fa-credit-card me-2"></i>立即付款
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="@Url.Action("Cart", "Products")" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>返回购物车
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // 表单验证
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+        
+        // 获取配送方式文本
+        function getShippingMethodText(method) {
+            switch (method) {
+                case 0: return '快递配送';
+                case 1: return '面交';
+                case 2: return '免运费';
+                default: return '未知';
+            }
+        }
+    </script>
+}
+
+@functions {
+    // 服务器端辅助函数：获取配送方式文本
+    private string GetShippingMethodText(MiniShare.Models.ShippingMethod method)
+    {
+        switch (method)
+        {
+            case MiniShare.Models.ShippingMethod.Express: return "快递配送";
+            case MiniShare.Models.ShippingMethod.Meetup: return "面交";
+            case MiniShare.Models.ShippingMethod.FreeShipping: return "免运费";
+            default: return "未知";
+        }
+    }
+}

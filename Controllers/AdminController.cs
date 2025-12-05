@@ -97,6 +97,9 @@ namespace MiniShare.Controllers
                 Name = request.Name,
                 Price = request.Price,
                 Description = request.Description,
+                ShippingTimeHours = request.ShippingTimeHours,
+                ShippingMethod = request.ShippingMethod,
+                ShippingFee = request.ShippingFee,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Products.Add(product);

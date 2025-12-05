@@ -1,7 +1,9 @@
+@inject MiniShare.Services.ICartService CartService
 @{
     var currentUser = User.Identity.IsAuthenticated ? await UserManager.GetUserAsync(User) : null;
     var displayName = currentUser?.DisplayName ?? User.Identity.Name ?? "用户";
     var avatarUrl = currentUser?.AvatarUrl;
+    var cartCount = CartService.GetCartCount();
 }
 
 <!DOCTYPE html>
@@ -49,7 +51,7 @@
                             <a class="nav-link position-relative" asp-area="" asp-controller="Products" asp-action="Cart">
                                 <i class="fas fa-shopping-cart me-1"></i>购物车
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count">
-                                    0
+                                    @cartCount
                                 </span>
                             </a>
                         </li>

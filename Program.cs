@@ -10,10 +10,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".MiniShare.Cart";
+    options.IdleTimeout = TimeSpan.FromDays(30); // 30天超时
+    options.Cookie.IsEssential = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.MaxAge = TimeSpan.FromDays(30); // 设置Cookie最大生存时间为30天，确保持久化
+});
+builder.Services.AddHttpContextAccessor();
 
 // 注册文件上传服务器
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+// 注册购物车服务
+builder.Services.AddScoped<ICartService, CartService>();
 
 // DbContext + MySQL
 var connectionString = builder.Configuration.GetConnectionString("MiniShareDb");

@@ -10,7 +10,7 @@
 }
 else
 {
-    <form asp-action="Checkout" method="post" id="checkoutForm">
+    <form asp-controller="Checkout" asp-action="Index" method="get" id="checkoutForm">
         @Html.AntiForgeryToken()
         <div class="mb-2">
             <input type="checkbox" id="selectAll" /> 全选
@@ -82,10 +82,10 @@ else
             var token = $('#favTokenForm input[name="__RequestVerificationToken"]').val();
             function setBtnState(btn, isFav){
                 if(isFav){
-                    btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                    btn.removeClass('btn-outline-primary').addClass('btn-danger text-white');
                     btn.find('i').removeClass('far').addClass('fas');
                 } else {
-                    btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                    btn.removeClass('btn-danger text-white').addClass('btn-outline-primary');
                     btn.find('i').removeClass('fas').addClass('far');
                 }
             }
@@ -117,8 +117,16 @@ else
                     alert('操作失败，请先登录');
                 });
             });
+            
+            $('#checkoutForm').on('submit', function(e){
+                var hasSelection = $('.item-checkbox:checked').length > 0;
+                if(!hasSelection){
+                    e.preventDefault();
+                    alert('请先选择要结算的商品');
+                }
+            });
 
-            // 初始化a
+            // 初始化
             updateTotal();
         });
     </script>

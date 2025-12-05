@@ -469,10 +469,10 @@
                     success: function(response) {
                         // Update button appearance based on response
                         if (response.isFavorite) {
-                            button.removeClass('btn-outline-danger').addClass('btn-danger');
+                            button.removeClass('btn-outline-danger').addClass('btn-danger text-white');
                             button.find('i').addClass('fas').removeClass('far');
                         } else {
-                            button.removeClass('btn-danger').addClass('btn-outline-danger');
+                            button.removeClass('btn-danger text-white').addClass('btn-outline-danger');
                             button.find('i').removeClass('fas').addClass('far');
                         }
                     },
@@ -515,10 +515,10 @@
                     success: function(response) {
                         // Update button appearance based on response
                         if (response.isFavorite) {
-                            button.removeClass('btn-outline-danger').addClass('btn-danger');
+                            button.removeClass('btn-outline-danger').addClass('btn-danger text-white');
                             button.find('i').addClass('fas').removeClass('far');
                         } else {
-                            button.removeClass('btn-danger').addClass('btn-outline-danger');
+                            button.removeClass('btn-danger text-white').addClass('btn-outline-danger');
                             button.find('i').removeClass('fas').addClass('far');
                         }
                     },
