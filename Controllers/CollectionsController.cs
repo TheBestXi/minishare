@@ -28,6 +28,7 @@ namespace MiniShare.Controllers
             var productCollections = await _context.ProductFavorites
                 .Where(pf => pf.UserId == userId)
                 .Include(pf => pf.Product)
+                .ThenInclude(p => p.Images)
                 .OrderByDescending(pf => pf.CreatedAt)
                 .ToListAsync();
 
@@ -35,6 +36,8 @@ namespace MiniShare.Controllers
                 .Where(pf => pf.UserId == userId)
                 .Include(pf => pf.Post)
                 .ThenInclude(p => p.Author)
+                .Include(pf => pf.Post)
+                .ThenInclude(p => p.Images)
                 .OrderByDescending(pf => pf.CreatedAt)
                 .ToListAsync();
 

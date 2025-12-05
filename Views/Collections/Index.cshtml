@@ -54,7 +54,11 @@
                                         <!-- 商品图片 -->
                                         <div class="product-image-container" style="height: 200px; overflow: hidden;">
                                             <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="product-link">
-                                                <img src="https://picsum.photos/seed/product-@product.Id/300/200.jpg" 
+                                                @{
+                                                    // 获取商品首图
+                                                    var firstImage = product.Images?.Where(img => img.ProductId == product.Id).OrderBy(img => img.SortOrder).FirstOrDefault();
+                                                }
+                                                <img src="@(firstImage != null ? firstImage.ImageUrl : $"https://picsum.photos/seed/product-{product.Id}/300/200.jpg")" 
                                                      alt="@product.Name" 
                                                      class="card-img-top" 
                                                      style="height: 100%; object-fit: cover;">
