@@ -31,11 +31,14 @@ else
                 </div>
                 <div class="d-flex flex-column align-items-end">
                     <div>
-                        <form asp-action="RemoveFromCart" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@p.Id" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger me-1">删除</button>
-                        </form>
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger me-1"
+                                formaction="@Url.Action("RemoveFromCart", "Products")"
+                                formmethod="post"
+                                name="id"
+                                value="@p.Id">
+                            删除
+                        </button>
                         <button type="button" class="btn btn-sm btn-outline-danger fav-btn" data-id="@p.Id">
                             <i class="far fa-heart"></i> 收藏
                         </button>
