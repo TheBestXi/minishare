@@ -119,8 +119,7 @@ static async Task SeedAdminAsync(IServiceProvider services)
         {
             UserName = adminEmail,
             Email = adminEmail,
-            EmailConfirmed = true,
-            DisplayName = "Administrator"
+            EmailConfirmed = true
         };
 
         var createResult = await userManager.CreateAsync(adminUser, adminPassword);

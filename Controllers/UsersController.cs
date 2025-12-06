@@ -24,11 +24,11 @@ namespace MiniShare.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(string displayName, string? avatarUrl)
+        public async Task<IActionResult> Profile(string userName, string? avatarUrl)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
-            user.DisplayName = displayName;
+            user.UserName = userName;
             user.AvatarUrl = avatarUrl;
             await _userManager.UpdateAsync(user);
             return RedirectToAction(nameof(Profile));

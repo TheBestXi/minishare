@@ -1,9 +1,9 @@
 @inject MiniShare.Services.ICartService CartService
 @{
     var currentUser = User.Identity.IsAuthenticated ? await UserManager.GetUserAsync(User) : null;
-    var displayName = currentUser?.DisplayName ?? User.Identity.Name ?? "用户";
-    var avatarUrl = currentUser?.AvatarUrl;
-    var cartCount = CartService.GetCartCount();
+            var displayName = currentUser?.UserName ?? User.Identity.Name ?? "用户";
+            var avatarUrl = currentUser?.AvatarUrl;
+            var cartCount = CartService.GetCartCount();
 }
 
 <!DOCTYPE html>
@@ -85,7 +85,7 @@
                                     <span>@displayName</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Profile"><i class="fas fa-user me-2"></i>我的资料</a></li>
+                                    <li><a class="dropdown-item" asp-controller="UserProfile" asp-action="Index"><i class="fas fa-user me-2"></i>我的资料</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Products"><i class="fas fa-cog me-2"></i>后台管理</a></li>

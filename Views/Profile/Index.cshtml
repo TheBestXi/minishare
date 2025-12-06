@@ -14,14 +14,14 @@
                 <div class="d-flex align-items-center">
                     <!-- 头像 -->
                     <div class="avatar-container me-4">
-                        <img src="@(user.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(user.DisplayName ?? user.UserName ?? "用户")}&background=random&size=100")" 
-                             alt="@user.DisplayName" 
-                             class="rounded-circle" 
-                             style="width: 100px; height: 100px; object-fit: cover; border: 3px solid white; box-shadow: 0 0 0 3px rgba(255,255,255,0.2);">
+                        <img src="@(user.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(user.UserName ?? "用户")}&background=random&size=100")" 
+                                 alt="@user.UserName" 
+                                 class="rounded-circle" 
+                                 style="width: 100px; height: 100px; object-fit: cover; border: 3px solid white; box-shadow: 0 0 0 3px rgba(255,255,255,0.2);">
                     </div>
                     <!-- 个人信息 -->
                     <div>
-                        <h2 class="mb-0">@(user.DisplayName ?? user.UserName)</h2>
+                        <h2 class="mb-0">@user.UserName</h2>
                         <p class="text-white-80 mb-0">@user.Email</p>
                         <div class="mt-1">
                             <small class="text-white-70">

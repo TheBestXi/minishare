@@ -22,7 +22,7 @@
                     <div class="col-md-4">
                         <div class="text-center">
                             <div class="avatar-preview mb-3" style="width: 150px; height: 150px; margin: 0 auto; overflow: hidden; border-radius: 50%; border: 3px solid #e9ecef;">
-                                <img id="avatarPreview" src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.DisplayName ?? Model.UserName ?? "用户")}&background=random&size=150")" 
+                                <img id="avatarPreview" src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.UserName ?? "用户")}&background=random&size=150")" 
                                      alt="头像预览" 
                                      class="w-100 h-100 object-fit-cover" 
                                      style="transition: transform 0.3s ease;" 
@@ -35,13 +35,6 @@
                     
                     <!-- 个人资料表单 -->
                     <div class="col-md-8">
-                        <!-- 显示名称 -->
-                        <div class="mb-3">
-                            <label asp-for="DisplayName" class="form-label fw-bold">显示名称</label>
-                            <input asp-for="DisplayName" class="form-control" placeholder="请输入显示名称">
-                            <span asp-validation-for="DisplayName" class="text-danger"></span>
-                        </div>
-                        
                         <!-- 用户名 -->
                         <div class="mb-3">
                             <label asp-for="UserName" class="form-label fw-bold">用户名</label>
@@ -114,9 +107,8 @@
                 avatarPreview.src = avatarUrl;
             } else {
                 // 如果URL为空，使用默认头像
-                var displayName = document.getElementById('DisplayName').value;
                 var userName = document.getElementById('UserName').value;
-                var name = displayName || userName || '用户';
+                var name = userName || '用户';
                 avatarPreview.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=150`;
             }
         });

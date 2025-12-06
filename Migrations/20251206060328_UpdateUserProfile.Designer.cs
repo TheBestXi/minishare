@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniShare.Data;
 
@@ -10,9 +11,11 @@ using MiniShare.Data;
 namespace MiniShare.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251206060328_UpdateUserProfile")]
+    partial class UpdateUserProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,6 +227,10 @@ namespace MiniShare.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
+                    b.Property<string>("UserNumber")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -266,7 +273,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("MiniShare.Models.Order", b =>
@@ -293,7 +300,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("MiniShare.Models.Post", b =>
@@ -324,7 +331,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("MiniShare.Models.PostFavorite", b =>
@@ -349,7 +356,7 @@ namespace MiniShare.Migrations
                     b.HasIndex("PostId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("PostFavorites", (string)null);
+                    b.ToTable("PostFavorites");
                 });
 
             modelBuilder.Entity("MiniShare.Models.PostImage", b =>
@@ -376,7 +383,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostImages", (string)null);
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("MiniShare.Models.PostLike", b =>
@@ -401,7 +408,7 @@ namespace MiniShare.Migrations
                     b.HasIndex("PostId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("PostLikes", (string)null);
+                    b.ToTable("PostLikes");
                 });
 
             modelBuilder.Entity("MiniShare.Models.Product", b =>
@@ -435,7 +442,7 @@ namespace MiniShare.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MiniShare.Models.ProductComment", b =>
@@ -467,7 +474,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductComments", (string)null);
+                    b.ToTable("ProductComments");
                 });
 
             modelBuilder.Entity("MiniShare.Models.ProductFavorite", b =>
@@ -491,7 +498,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductFavorites", (string)null);
+                    b.ToTable("ProductFavorites");
                 });
 
             modelBuilder.Entity("MiniShare.Models.ProductImage", b =>
@@ -526,7 +533,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("ProductRequestId");
 
-                    b.ToTable("ProductImages", (string)null);
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("MiniShare.Models.ProductRequest", b =>
@@ -579,7 +586,7 @@ namespace MiniShare.Migrations
 
                     b.HasIndex("ReviewedById");
 
-                    b.ToTable("ProductRequests", (string)null);
+                    b.ToTable("ProductRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

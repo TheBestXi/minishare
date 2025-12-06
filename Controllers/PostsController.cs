@@ -223,7 +223,7 @@ namespace MiniShare.Controllers
             {
                 userId = int.Parse(userIdStr);
                 var user = await _context.Users.FindAsync(userId.Value);
-                displayName = user?.DisplayName ?? user?.Email ?? "匿名";
+                displayName = user?.UserName ?? user?.Email ?? "匿名";
             }
             else if (!string.IsNullOrWhiteSpace(authorName))
             {

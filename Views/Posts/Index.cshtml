@@ -59,7 +59,7 @@
                             <h5 class="card-title">@p.Title</h5>
                             <div class="text-muted mb-2">
                                 <small>
-                                    <i class="fas fa-user"></i> @(p.Author?.DisplayName ?? p.Author?.Email ?? "未知")
+                                    <i class="fas fa-user"></i> @(p.Author?.UserName ?? p.Author?.Email ?? "未知")
                                     <i class="fas fa-calendar ms-2"></i> @p.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
                                 </small>
                             </div>

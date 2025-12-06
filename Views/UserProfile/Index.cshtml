@@ -1,0 +1,123 @@
+@using MiniShare.Models
+@model ApplicationUser
+@{    ViewData["Title"] = "我的资料";
+}
+
+<div class="container py-5">
+    <h1 class="display-5 fw-bold mb-5">我的资料</h1>
+    
+    <div class="card shadow-sm border rounded-3 overflow-hidden">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">个人信息</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <!-- 左侧：头像 -->
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="avatar-container mb-3">
+                            <img src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.UserName ?? "用户")}&background=random&size=200")" 
+                                 alt="头像" 
+                                 class="rounded-circle" 
+                                 style="width: 200px; height: 200px; object-fit: cover; border: 3px solid #e9ecef;">
+                        </div>
+                        <h4 class="mb-0">@Model.UserName</h4>
+                        <p class="text-muted mb-3">@Model.Email</p>
+                        <a asp-action="Edit" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>编辑资料
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 右侧：详细信息 -->
+                <div class="col-md-9">
+                    <div class="row g-4">
+                        <!-- 基本信息 -->
+                        <div class="col-12">
+                            <h5 class="fw-bold mb-3">基本信息</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">用户名</div>
+                                        <div>@Model.UserName</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">邮箱</div>
+                                        <div>@Model.Email</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">性别</div>
+                                        <div>
+                                            @{ var genderText = Model.Gender == Gender.Male ? "男" : (Model.Gender == Gender.Female ? "女" : "未知"); }
+                                            @if (Model.Gender == Gender.Male)
+                                            {
+                                                <i class="fas fa-male text-primary"></i> @genderText
+                                            }
+                                            else if (Model.Gender == Gender.Female)
+                                            {
+                                                <i class="fas fa-female text-danger"></i> @genderText
+                                            }
+                                            else
+                                            {
+                                                @genderText
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">生日</div>
+                                        <div>
+                                            @(Model.Birthday.HasValue ? Model.Birthday.Value.ToLocalTime().ToString("yyyy-MM-dd") : "未设置")
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">院校</div>
+                                        <div>@(string.IsNullOrEmpty(Model.School) ? "未设置" : Model.School)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">专业</div>
+                                        <div>@(string.IsNullOrEmpty(Model.Major) ? "未设置" : Model.Major)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex">
+                                        <div class="text-muted me-3" style="width: 80px;">注册时间</div>
+                                        <div>@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 个人简介 -->
+                        <div class="col-12">
+                            <h5 class="fw-bold mb-3">个人简介</h5>
+                            <div class="p-3 bg-light rounded">
+                                <p class="mb-0">@(string.IsNullOrEmpty(Model.Bio) ? "暂无简介" : Model.Bio)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-container {
+        position: relative;
+    }
+    
+    .avatar-container:hover {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+</style>

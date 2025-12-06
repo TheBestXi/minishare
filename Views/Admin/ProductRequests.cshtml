@@ -46,7 +46,7 @@
                         <tr>
                             <td>@req.Name</td>
                             <td>￥@req.Price</td>
-                            <td>@(req.RequestedBy?.DisplayName ?? req.RequestedBy?.Email ?? "未知")</td>
+                            <td>@(req.RequestedBy?.UserName ?? req.RequestedBy?.Email ?? "未知")</td>
                             <td>
                                 <span class="badge @GetStatusBadge(req.Status)">
                                     @(req.Status switch
@@ -66,7 +66,7 @@
                                 }
                                 else
                                 {
-                                    <div>审核人：@(req.ReviewedBy?.DisplayName ?? req.ReviewedBy?.Email ?? "未知")</div>
+                                    <div>审核人：@(req.ReviewedBy?.UserName ?? req.ReviewedBy?.Email ?? "未知")</div>
                                     <div>时间：@req.ReviewedAt?.ToString("yyyy-MM-dd HH:mm")</div>
                                     @if (!string.IsNullOrWhiteSpace(req.ReviewComment))
                                     {

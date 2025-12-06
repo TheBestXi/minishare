@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MiniShare.Models;
 using System.Diagnostics;
@@ -29,27 +29,26 @@ namespace MiniShare.Controllers
         {
             if (ModelState.IsValid)
             {
-                // 尝试通过邮箱查找用户
+                // 只通过邮箱查找用户
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user != null)
+                if (user == null)
                 {
-                    // 可以使用Email或UserName进行登录
-                    var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                    if (!result.Succeeded)
-                    {
-                        // 如果失败，尝试使用UserName登录
-                        result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
-                    }
-                    
-                    if (result.Succeeded)
-                    {
-                        _logger.LogInformation("用户 {Email} 登录成功", model.Email);
-                        return RedirectToAction("Index", "Home");
-                    }
+                    ModelState.AddModelError(string.Empty, "账号不存在");
+                    _logger.LogWarning("用户 {Email} 不存在", model.Email);
+                    return View(model);
                 }
                 
-                ModelState.AddModelError(string.Empty, "邮箱或密码错误");
-                _logger.LogWarning("用户 {Email} 登录失败", model.Email);
+                // 只使用UserName进行登录
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+                
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("用户 {Email} 登录成功", model.Email);
+                    return RedirectToAction("Index", "Home");
+                }
+                
+                ModelState.AddModelError(string.Empty, "密码错误");
+                _logger.LogWarning("用户 {Email} 登录失败，密码错误", model.Email);
             }
 
             return View(model);

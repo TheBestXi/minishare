@@ -1,0 +1,154 @@
+@model MiniShare.Models.ApplicationUser
+@{    ViewData["Title"] = "编辑资料";
+}
+
+<div class="container py-5">
+    <h1 class="display-5 fw-bold mb-5">编辑资料</h1>
+    
+    <div class="card shadow-sm border rounded-3 overflow-hidden">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">编辑个人信息</h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <input type="hidden" asp-for="ConcurrencyStamp" />
+                <input type="hidden" asp-for="SecurityStamp" />
+                
+                <div class="row">
+                    <!-- 左侧：头像上传 -->
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="avatar-preview mb-3" style="width: 200px; height: 200px; margin: 0 auto; overflow: hidden; border-radius: 50%; border: 3px solid #e9ecef;">
+                                <img id="avatarPreview" src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.UserName ?? "用户")}&background=random&size=200")" 
+                                     alt="头像预览" 
+                                     class="w-100 h-100 object-fit-cover" 
+                                     style="transition: transform 0.3s ease;" 
+                                     onmouseover="this.style.transform='scale(1.1)'" 
+                                     onmouseout="this.style.transform='scale(1)'">
+                            </div>
+                            <div class="mb-3">
+                                <label for="avatarFile" class="form-label fw-bold">上传头像</label>
+                                <input type="file" class="form-control" id="avatarFile" name="avatarFile" accept=".jpg,.jpeg,.png" 
+                                       onchange="previewImage(this);">
+                                <div class="form-text text-muted mt-1">
+                                    支持 JPG、PNG 格式，大小不超过 2MB
+                                </div>
+                                <span id="avatarFileError" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：表单字段 -->
+                    <div class="col-md-8">
+                        <div class="row g-4">
+                            <!-- 用户名 -->
+                            <div class="col-md-6">
+                                <label asp-for="UserName" class="form-label fw-bold">用户名</label>
+                                <input asp-for="UserName" class="form-control" placeholder="请输入用户名" required>
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                                <div class="invalid-feedback">请输入用户名</div>
+                            </div>
+                            
+                            <!-- 邮箱 -->
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label fw-bold">邮箱</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="请输入邮箱" required readonly>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="invalid-feedback">请输入有效的邮箱地址</div>
+                            </div>
+                            
+                            <!-- 性别 -->
+                            <div class="col-md-6">
+                                <label asp-for="Gender" class="form-label fw-bold">性别</label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="0">未知</option>
+                                    <option value="1">男</option>
+                                    <option value="2">女</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- 生日 -->
+                            <div class="col-md-6">
+                                <label asp-for="Birthday" class="form-label fw-bold">生日</label>
+                                <input asp-for="Birthday" type="date" class="form-control">
+                                <span asp-validation-for="Birthday" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- 院校 -->
+                            <div class="col-md-6">
+                                <label asp-for="School" class="form-label fw-bold">院校</label>
+                                <input asp-for="School" class="form-control" placeholder="请输入院校">
+                                <span asp-validation-for="School" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- 专业 -->
+                            <div class="col-md-6">
+                                <label asp-for="Major" class="form-label fw-bold">专业</label>
+                                <input asp-for="Major" class="form-control" placeholder="请输入专业">
+                                <span asp-validation-for="Major" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- 个人简介 -->
+                            <div class="col-12">
+                                <label asp-for="Bio" class="form-label fw-bold">个人简介</label>
+                                <textarea asp-for="Bio" rows="5" class="form-control" placeholder="请输入个人简介"></textarea>
+                                <span asp-validation-for="Bio" class="text-danger"></span>
+                            </div>
+                            
+                            <!-- 操作按钮 -->
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>保存修改
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>取消
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表单验证
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+        
+        // 头像预览
+        function previewImage(input) {
+            var preview = document.getElementById('avatarPreview');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // 设置最大日期为今天
+        document.getElementById('Birthday').max = new Date().toISOString().split('T')[0];
+    </script>
+}

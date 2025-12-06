@@ -40,7 +40,7 @@
         <div class="d-flex align-items-center gap-3 text-muted mb-3">
             <div>
                 <i class="fas fa-user me-1"></i>
-                @(Model.Author?.DisplayName ?? Model.Author?.Email ?? "未知用户")
+                @(Model.Author?.UserName ?? Model.Author?.Email ?? "未知用户")
             </div>
             <div>
                 <i class="fas fa-calendar me-1"></i>
