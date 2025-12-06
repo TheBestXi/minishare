@@ -127,7 +127,7 @@ namespace MiniShare.Controllers
 
             // 重定向到订单列表
             TempData["SuccessMessage"] = "订单创建成功！";
-            return RedirectToAction("MyOrders", "Products");
+            return RedirectToAction("MyOrders", "Orders");
         }
     }
 }

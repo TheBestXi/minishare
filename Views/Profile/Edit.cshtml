@@ -1,0 +1,124 @@
+@model MiniShare.Models.ApplicationUser
+@{    ViewData["Title"] = "编辑个人资料";
+}
+
+<div class="container py-5">
+    <h1 class="display-5 fw-bold mb-5">编辑个人资料</h1>
+    
+    <div class="card shadow-sm border rounded-3 overflow-hidden">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">个人信息</h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <input type="hidden" asp-for="ConcurrencyStamp" />
+                <input type="hidden" asp-for="SecurityStamp" />
+                
+                <div class="row g-4">
+                    <!-- 头像预览 -->
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="avatar-preview mb-3" style="width: 150px; height: 150px; margin: 0 auto; overflow: hidden; border-radius: 50%; border: 3px solid #e9ecef;">
+                                <img id="avatarPreview" src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.DisplayName ?? Model.UserName ?? "用户")}&background=random&size=150")" 
+                                     alt="头像预览" 
+                                     class="w-100 h-100 object-fit-cover" 
+                                     style="transition: transform 0.3s ease;" 
+                                     onmouseover="this.style.transform='scale(1.1)'" 
+                                     onmouseout="this.style.transform='scale(1)'">
+                            </div>
+                            <small class="text-muted">点击头像可预览</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 个人资料表单 -->
+                    <div class="col-md-8">
+                        <!-- 显示名称 -->
+                        <div class="mb-3">
+                            <label asp-for="DisplayName" class="form-label fw-bold">显示名称</label>
+                            <input asp-for="DisplayName" class="form-control" placeholder="请输入显示名称">
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                        </div>
+                        
+                        <!-- 用户名 -->
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label fw-bold">用户名</label>
+                            <input asp-for="UserName" class="form-control" placeholder="请输入用户名" required>
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                            <div class="invalid-feedback">请输入用户名</div>
+                        </div>
+                        
+                        <!-- 邮箱 -->
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-bold">邮箱</label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="请输入邮箱" required>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <div class="invalid-feedback">请输入有效的邮箱地址</div>
+                        </div>
+                        
+                        <!-- 头像URL -->
+                        <div class="mb-3">
+                            <label asp-for="AvatarUrl" class="form-label fw-bold">头像URL</label>
+                            <input asp-for="AvatarUrl" class="form-control" placeholder="请输入头像图片的URL">
+                            <span asp-validation-for="AvatarUrl" class="text-danger"></span>
+                        </div>
+                        
+                        <!-- 个人简介 -->
+                        <div class="mb-3">
+                            <label asp-for="Bio" class="form-label fw-bold">个人简介</label>
+                            <textarea asp-for="Bio" rows="4" class="form-control" placeholder="请输入个人简介"></textarea>
+                            <span asp-validation-for="Bio" class="text-danger"></span>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>保存修改
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>取消
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表单验证
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+        
+        // 头像URL输入实时预览
+        document.getElementById('AvatarUrl').addEventListener('input', function(e) {
+            var avatarUrl = e.target.value;
+            var avatarPreview = document.getElementById('avatarPreview');
+            if (avatarUrl) {
+                avatarPreview.src = avatarUrl;
+            } else {
+                // 如果URL为空，使用默认头像
+                var displayName = document.getElementById('DisplayName').value;
+                var userName = document.getElementById('UserName').value;
+                var name = displayName || userName || '用户';
+                avatarPreview.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=150`;
+            }
+        });
+    </script>
+}

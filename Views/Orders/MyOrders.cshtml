@@ -1,0 +1,121 @@
+@model List<MiniShare.Models.Order>
+@{    ViewData["Title"] = "我的订单";
+    var images = ViewBag.ProductImages as IDictionary<int, string>;
+}
+
+<div class="container py-5">
+    <h1 class="display-5 fw-bold mb-5">我的订单</h1>
+    
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-receipt fa-5x mb-3 text-muted"></i>
+            <h5>暂无订单</h5>
+            <p class="text-muted">快去挑选心仪的商品吧！</p>
+            <a href="/Products" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-bag me-2"></i>去购物
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var order in Model)
+            {
+                <div class="col-12">
+                    <div class="card shadow-sm border rounded-3 overflow-hidden">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">订单 #@order.Id</h5>
+                                    <small class="opacity-80">下单时间：@order.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</small>
+                                </div>
+                                <div>
+                                    <span class="badge @(order.Status == MiniShare.Models.OrderStatus.Paid ? "bg-success" : "bg-warning")">
+                                        @(order.Status == MiniShare.Models.OrderStatus.Paid ? "已支付" : "待支付")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <!-- 商品图片 -->
+                                <div class="col-md-2 mb-3 mb-md-0">
+                                    <div class="product-image-container" style="width: 120px; height: 120px; overflow: hidden; border-radius: 8px;">
+                                        @if (images != null && images.ContainsKey(order.ProductId))
+                                        {
+                                            <img src="@images[order.ProductId]" 
+                                                 alt="@order.Product?.Name" 
+                                                 class="w-100 h-100 object-fit-cover" 
+                                                 style="transition: transform 0.3s ease;" 
+                                                 onmouseover="this.style.transform='scale(1.1)'" 
+                                                 onmouseout="this.style.transform='scale(1)'">
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center justify-content-center bg-light w-100 h-100">
+                                                <i class="fas fa-image fa-3x text-muted"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- 商品信息 -->
+                                <div class="col-md-5 mb-3 mb-md-0">
+                                    <h5 class="fw-bold">@order.Product?.Name</h5>
+                                    <div class="text-muted small mb-2">商品ID：@order.ProductId</div>
+                                    <div class="h4 text-danger fw-bold">￥@order.Product?.Price.ToString("F2")</div>
+                                </div>
+                                
+                                <!-- 订单状态 -->
+                                <div class="col-md-3 mb-3 mb-md-0">
+                                    <div class="text-muted mb-1">订单状态</div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas @(order.Status == MiniShare.Models.OrderStatus.Paid ? "fa-check-circle text-success" : "fa-clock text-warning") me-2"></i>
+                                        <span class="fw-bold">@(order.Status == MiniShare.Models.OrderStatus.Paid ? "已支付" : "待支付")</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="col-md-2">
+                                    <div class="d-flex flex-column gap-2">
+                                        @if (order.Status == MiniShare.Models.OrderStatus.Pending)
+                                        {
+                                            <form asp-action="MarkPaid" method="post">
+                                                <input type="hidden" name="id" value="@order.Id" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                                    <i class="fas fa-credit-card me-1"></i>标记已支付
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-action="DeleteOrder" method="post">
+                                            <input type="hidden" name="id" value="@order.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                <i class="fas fa-trash me-1"></i>删除订单
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // 删除订单确认
+        document.querySelectorAll('form[asp-action="DeleteOrder"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('确定要删除这个订单吗？')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}
