@@ -1,0 +1,133 @@
+@model MiniShare.Controllers.EditUserViewModel
+@{	ViewData["Title"] = "编辑用户";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">编辑用户</h2>
+    
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <form asp-controller="UserManagement" asp-action="Edit" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserId" />
+                
+                <div class="row g-4">
+                    <!-- 基本信息 -->
+                    <div class="col-md-6">
+                        <h5 class="fw-bold mb-3">基本信息</h5>
+                        
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label">用户名</label>
+                            <input asp-for="UserName" class="form-control" required />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">邮箱</label>
+                            <input asp-for="Email" type="email" class="form-control" required />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Bio" class="form-label">个人简介</label>
+                            <textarea asp-for="Bio" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Bio" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Gender" class="form-label">性别</label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="0">未知</option>
+                                <option value="1">男</option>
+                                <option value="2">女</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细信息 -->
+                    <div class="col-md-6">
+                        <h5 class="fw-bold mb-3">详细信息</h5>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Birthday" class="form-label">生日</label>
+                            <input asp-for="Birthday" type="date" class="form-control" />
+                            <span asp-validation-for="Birthday" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Major" class="form-label">专业</label>
+                            <input asp-for="Major" class="form-control" />
+                            <span asp-validation-for="Major" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="School" class="form-label">院校</label>
+                            <input asp-for="School" class="form-control" />
+                            <span asp-validation-for="School" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="AvatarUrl" class="form-label">头像URL</label>
+                            <input asp-for="AvatarUrl" class="form-control" />
+                            <span asp-validation-for="AvatarUrl" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- 角色分配 -->
+                    <div class="col-12">
+                        <h5 class="fw-bold mb-3">角色分配</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">选择角色</label>
+                            <div class="form-check">
+                                @for (int i = 0; i < Model.AllRoles.Length; i++)
+                                {
+                                    var roleName = Model.AllRoles[i];
+                                    var isSelected = Model.SelectedRoles.Contains(roleName);
+                                    <div class="form-check form-check-inline me-3 mb-2">
+                                        <input type="checkbox" name="SelectedRoles" class="form-check-input" value="@roleName" @(isSelected ? "checked" : "") />
+                                        <label class="form-check-label">@roleName</label>
+                                    </div>
+                                }
+                            </div>
+                            <span asp-validation-for="SelectedRoles" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end gap-3">
+                            <a asp-controller="UserManagement" asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>保存修改
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表单验证
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+    </script>
+}

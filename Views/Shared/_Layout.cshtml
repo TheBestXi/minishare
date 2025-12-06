@@ -1,9 +1,16 @@
+@using Microsoft.EntityFrameworkCore
 @inject MiniShare.Services.ICartService CartService
-@{
+@inject MiniShare.Data.ApplicationDbContext _context
+@{ 
     var currentUser = User.Identity.IsAuthenticated ? await UserManager.GetUserAsync(User) : null;
             var displayName = currentUser?.UserName ?? User.Identity.Name ?? "用户";
             var avatarUrl = currentUser?.AvatarUrl;
             var cartCount = CartService.GetCartCount();
+            int pendingRequestCount = 0;
+            if (User.IsInRole("Admin"))
+            {
+                pendingRequestCount = await _context.ProductRequests.CountAsync(r => r.Status == MiniShare.Models.ProductRequestStatus.Pending);
+            }
 }
 
 <!DOCTYPE html>
@@ -88,7 +95,17 @@
                                     <li><a class="dropdown-item" asp-controller="UserProfile" asp-action="Index"><i class="fas fa-user me-2"></i>我的资料</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Products"><i class="fas fa-cog me-2"></i>后台管理</a></li>
+                                        <li>
+                                            <a class="dropdown-item position-relative" asp-controller="Admin" asp-action="Products">
+                                                <i class="fas fa-cog me-2"></i>后台管理
+                                                @if (pendingRequestCount > 0)
+                                                {
+                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                        @pendingRequestCount
+                                                    </span>
+                                                }
+                                            </a>
+                                        </li>
                                     }
                                     <li><hr class="dropdown-divider"></li>
                                     <li>

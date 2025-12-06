@@ -17,7 +17,12 @@ namespace MiniShare.Controllers
 
         public async Task<IActionResult> Posts()
         {
-            var posts = await _context.Posts.Include(p => p.Author).OrderByDescending(p => p.CreatedAt).ToListAsync();
+            var posts = await _context.Posts
+                .Include(p => p.Author)
+                .Include(p => p.Comments) // 包含评论，用于统计评论数
+                .Include(p => p.Images) // 包含帖子图片
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
             return View(posts);
         }
 
@@ -32,9 +37,40 @@ namespace MiniShare.Controllers
             return RedirectToAction(nameof(Posts));
         }
 
-        public async Task<IActionResult> Products()
+        public async Task<IActionResult> Products(string searchTerm = null, string sortBy = "createdAt", string sortOrder = "desc")
         {
-            var products = await _context.Products.ToListAsync();
+            var productsQuery = _context.Products
+                .Include(p => p.Images) // 包含商品图片
+                .AsQueryable();
+            
+            // 搜索功能
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                productsQuery = productsQuery.Where(p => p.Name.Contains(searchTerm) || p.Description.Contains(searchTerm));
+            }
+            
+            // 排序功能
+            switch (sortBy)
+            {
+                case "name":
+                    productsQuery = sortOrder == "asc" ? productsQuery.OrderBy(p => p.Name) : productsQuery.OrderByDescending(p => p.Name);
+                    break;
+                case "price":
+                    productsQuery = sortOrder == "asc" ? productsQuery.OrderBy(p => p.Price) : productsQuery.OrderByDescending(p => p.Price);
+                    break;
+                case "createdAt":
+                default:
+                    productsQuery = sortOrder == "asc" ? productsQuery.OrderBy(p => p.CreatedAt) : productsQuery.OrderByDescending(p => p.CreatedAt);
+                    break;
+            }
+            
+            var products = await productsQuery.ToListAsync();
+            
+            // 将搜索和排序参数传递给视图
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["SortBy"] = sortBy;
+            ViewData["SortOrder"] = sortOrder;
+            
             return View(products);
         }
 

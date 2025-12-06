@@ -1,39 +1,196 @@
 @model List<MiniShare.Models.Product>
-@{
-    ViewData["Title"] = "商品管理";
+@{	ViewData["Title"] = "商品管理";
+    var searchTerm = ViewData["SearchTerm"] as string;
+    var sortBy = ViewData["SortBy"] as string;
+    var sortOrder = ViewData["SortOrder"] as string;
 }
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">商品管理</h2>
-    <div>
-        <a class="btn btn-outline-secondary me-2" asp-action="ProductRequests">
-            <i class="fas fa-inbox me-1"></i>查看商品申请
-        </a>
-        <a class="btn btn-primary" asp-action="CreateProduct">
-            <i class="fas fa-plus me-1"></i>新增商品
-        </a>
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">商品管理</h2>
+    
+    <!-- 顶部操作栏 -->
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <!-- 搜索功能 -->
+                <form asp-action="Products" method="get" class="d-flex gap-2 flex-grow-1 flex-md-grow-0" style="max-width: 400px;">
+                    <input type="text" name="searchTerm" placeholder="搜索商品名称或描述..." class="form-control" value="@searchTerm" />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>搜索
+                    </button>
+                </form>
+                
+                <!-- 操作按钮 -->
+                <div>
+                    <a class="btn btn-outline-secondary me-2" asp-action="ProductRequests">
+                        <i class="fas fa-inbox me-1"></i>查看商品申请
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 商品列表 -->
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">图片</th>
+                            <th>
+                                <a asp-action="Products" asp-route-searchTerm="@searchTerm" asp-route-sortBy="name" asp-route-sortOrder="@(sortBy == "name" && sortOrder == "asc" ? "desc" : "asc")" class="text-decoration-none text-dark">
+                                    名称
+                                    @if (sortBy == "name")
+                                    {
+                                        if (sortOrder == "asc")
+                                        {
+                                            <i class="fas fa-sort-up ms-1"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort-down ms-1"></i>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-action="Products" asp-route-searchTerm="@searchTerm" asp-route-sortBy="price" asp-route-sortOrder="@(sortBy == "price" && sortOrder == "asc" ? "desc" : "asc")" class="text-decoration-none text-dark">
+                                    价格
+                                    @if (sortBy == "price")
+                                    {
+                                        if (sortOrder == "asc")
+                                        {
+                                            <i class="fas fa-sort-up ms-1"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort-down ms-1"></i>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>描述</th>
+                            <th>
+                                <a asp-action="Products" asp-route-searchTerm="@searchTerm" asp-route-sortBy="createdAt" asp-route-sortOrder="@(sortBy == "createdAt" && sortOrder == "asc" ? "desc" : "asc")" class="text-decoration-none text-dark">
+                                    发布时间
+                                    @if (sortBy == "createdAt")
+                                    {
+                                        if (sortOrder == "asc")
+                                        {
+                                            <i class="fas fa-sort-up ms-1"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-sort-down ms-1"></i>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="fas fa-shopping-bag fa-5x text-muted mb-3"></i>
+                                    <h5 class="text-muted">暂无商品</h5>
+                                    <p class="text-muted">当前没有任何商品。</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (p.Images != null && p.Images.Any())
+                                        {
+                                            var mainImage = p.Images.OrderBy(img => img.IsMain ? 0 : 1).ThenBy(img => img.SortOrder).FirstOrDefault();
+                                            if (mainImage != null)
+                                            {
+                                                <img src="@mainImage.ImageUrl" alt="@p.Name" class="img-fluid rounded" style="width: 60px; height: 60px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width: 60px; height: 60px;">
+                                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-image fa-2x text-muted"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">@p.Name</div>
+                                    </td>
+                                    <td>
+                                        <div class="h6 text-danger fw-bold">￥@p.Price.ToString("F2")</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted text-truncate" style="max-width: 200px;">
+                                            @(p.Description?.Length > 100 ? p.Description.Substring(0, 100) + "..." : p.Description ?? "暂无描述")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted small">
+                                            @p.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <form asp-action="DeleteProduct" method="post" class="d-inline delete-form">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <input type="hidden" class="product-name" value="@p.Name" />
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash me-1"></i>删除
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>名称</th>
-            <th>价格</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var p in Model)
-    {
-        <tr>
-            <td>@p.Name</td>
-            <td>￥@p.Price</td>
-            <td>
-                <form asp-action="DeleteProduct" method="post">
-                    <input type="hidden" name="id" value="@p.Id" />
-                    <button class="btn btn-danger btn-sm">删除</button>
-                </form>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+
+@section Scripts {
+    <script>
+        // 商品删除确认
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForms = document.querySelectorAll('.delete-form');
+            
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const productName = this.querySelector('.product-name').value;
+                    if (confirm(`确定要删除商品 "${productName}" 吗？此操作不可恢复！`)) {
+                        this.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}

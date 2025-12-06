@@ -1,0 +1,60 @@
+@model List<MiniShare.Controllers.UserRolesViewModel>
+@{	ViewData["Title"] = "用户管理";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">用户管理</h2>
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-4">@TempData["ErrorMessage"]</div>
+    }
+    
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.UserName</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @foreach (var role in user.Roles)
+                                    {
+                                        <span class="badge bg-primary me-1">@role</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-controller="UserManagement" asp-action="Edit" asp-route-id="@user.UserId" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit me-1"></i>编辑
+                                        </a>
+                                        <a asp-controller="UserManagement" asp-action="ChangePassword" asp-route-id="@user.UserId" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-key me-1"></i>修改密码
+                                        </a>
+                                        <form asp-controller="UserManagement" asp-action="Delete" asp-route-id="@user.UserId" method="post" class="d-inline" onsubmit="return confirm('确定要删除用户 @user.UserName 吗？此操作不可恢复！')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash me-1"></i>删除
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
