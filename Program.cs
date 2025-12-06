@@ -7,6 +7,21 @@ using Microsoft.AspNetCore.Identity;
 using Pomelo.EntityFrameworkCore.MySql;
 var builder = WebApplication.CreateBuilder(args);
 
+// 捕获所有未处理异常（包括后台线程）
+AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+{
+    Console.WriteLine($"[CRITICAL] 未处理异常: {e.ExceptionObject}");
+    File.WriteAllText("fatal-error.log", e.ExceptionObject.ToString());
+};
+
+// 捕获 TaskScheduler 未观察异常
+TaskScheduler.UnobservedTaskException += (sender, e) =>
+{
+    Console.WriteLine($"[CRITICAL] Task异常: {e.Exception}");
+    File.WriteAllText("task-error.log", e.Exception.ToString());
+    e.SetObserved(); // 标记为已处理
+};
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -59,16 +74,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true; // 滑动过期：每次请求时重置过期时间
 });
 
-var app = builder.Build();
-
-// 初始化管理员账号
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await SeedAdminAsync(services);
-}
-
 // Configure the HTTP request pipeline.
+var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -99,15 +106,28 @@ static async Task SeedAdminAsync(IServiceProvider services)
     var roleManager = services.GetRequiredService<RoleManager<Microsoft.AspNetCore.Identity.IdentityRole<int>>>();
 
     const string adminRoleName = "Admin";
+    const string userRoleName = "User";
     const string adminEmail = "admin@admin.com";
     const string adminPassword = "Admin123";
 
+    // 创建Admin角色
     if (!await roleManager.RoleExistsAsync(adminRoleName))
     {
         var role = new Microsoft.AspNetCore.Identity.IdentityRole<int>
         {
             Name = adminRoleName,
             NormalizedName = adminRoleName.ToUpperInvariant()
+        };
+        await roleManager.CreateAsync(role);
+    }
+
+    // 创建User角色
+    if (!await roleManager.RoleExistsAsync(userRoleName))
+    {
+        var role = new Microsoft.AspNetCore.Identity.IdentityRole<int>
+        {
+            Name = userRoleName,
+            NormalizedName = userRoleName.ToUpperInvariant()
         };
         await roleManager.CreateAsync(role);
     }
