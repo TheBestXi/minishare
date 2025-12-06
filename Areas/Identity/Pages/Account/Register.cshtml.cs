@@ -72,6 +72,9 @@ namespace MiniShare.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("用户创建了新账户，密码已设置。");
 
+                    // 为新用户分配 User 角色
+                    await _userManager.AddToRoleAsync(user, "User");
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);
                 }

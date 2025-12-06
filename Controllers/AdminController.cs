@@ -15,14 +15,48 @@ namespace MiniShare.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Posts()
+        public async Task<IActionResult> Posts(string searchTerm = null, string sortBy = "createdAt", string sortOrder = "desc")
         {
-            var posts = await _context.Posts
+            var postsQuery = _context.Posts
                 .Include(p => p.Author)
                 .Include(p => p.Comments) // 包含评论，用于统计评论数
                 .Include(p => p.Images) // 包含帖子图片
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
+                .AsQueryable();
+            
+            // 搜索功能
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                postsQuery = postsQuery.Where(p => p.Title.Contains(searchTerm) || p.Content.Contains(searchTerm) || p.Author.UserName.Contains(searchTerm));
+            }
+            
+            // 排序功能
+            switch (sortBy)
+            {
+                case "title":
+                    postsQuery = sortOrder == "asc" ? postsQuery.OrderBy(p => p.Title) : postsQuery.OrderByDescending(p => p.Title);
+                    break;
+                case "author":
+                    postsQuery = sortOrder == "asc" ? postsQuery.OrderBy(p => p.Author.UserName) : postsQuery.OrderByDescending(p => p.Author.UserName);
+                    break;
+                case "likes":
+                    postsQuery = sortOrder == "asc" ? postsQuery.OrderBy(p => p.LikeCount) : postsQuery.OrderByDescending(p => p.LikeCount);
+                    break;
+                case "comments":
+                    postsQuery = sortOrder == "asc" ? postsQuery.OrderBy(p => p.Comments.Count) : postsQuery.OrderByDescending(p => p.Comments.Count);
+                    break;
+                case "createdAt":
+                default:
+                    postsQuery = sortOrder == "asc" ? postsQuery.OrderBy(p => p.CreatedAt) : postsQuery.OrderByDescending(p => p.CreatedAt);
+                    break;
+            }
+            
+            var posts = await postsQuery.ToListAsync();
+            
+            // 将搜索和排序参数传递给视图
+            ViewData["SearchTerm"] = searchTerm;
+            ViewData["SortBy"] = sortBy;
+            ViewData["SortOrder"] = sortOrder;
+            
             return View(posts);
         }
 

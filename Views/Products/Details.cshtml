@@ -23,21 +23,24 @@
                         bool hasImages = productImages != null && productImages.Count > 0;
                     }
                     
-                    @if (hasImages && productImages[0] != null)
+                    @if (Model != null)
                     {
-                        <!-- 显示实际的商品图片 -->
-                        <img id="mainProductImage" 
-                             src="@productImages[0].ImageUrl" 
-                             alt="@Model.Name" 
-                             class="main-product-image img-fluid rounded shadow-sm">
-                    }
-                    else
-                    {
-                        <!-- 显示默认图片 -->
-                        <img id="mainProductImage" 
-                             src="https://picsum.photos/seed/product-@Model.Id/800/600.jpg" 
-                             alt="@Model.Name" 
-                             class="main-product-image img-fluid rounded shadow-sm">
+                        @if (hasImages && productImages[0] != null)
+                        {
+                            <!-- 显示实际的商品图片 -->
+                            <img id="mainProductImage" 
+                                 src="@productImages[0].ImageUrl" 
+                                 alt="@Model.Name" 
+                                 class="main-product-image img-fluid rounded shadow-sm">
+                        }
+                        else
+                        {
+                            <!-- 显示默认图片 -->
+                            <img id="mainProductImage" 
+                                 src="https://picsum.photos/seed/product-@Model.Id/800/600.jpg" 
+                                 alt="@Model.Name" 
+                                 class="main-product-image img-fluid rounded shadow-sm">
+                        }
                     }
                     
                     <!-- Navigation Buttons -->
@@ -58,7 +61,7 @@
                         <!-- 显示实际的商品缩略图 -->
                         @foreach (var image in productImages)
                         {
-                            @if (image != null)
+                            @if (Model != null && image != null)
                             {
                                 <div class="thumbnail-item">
                                     <img src="@image.ImageUrl" 
@@ -365,7 +368,7 @@
             // 动态生成图片数组
             let images = [];
             
-            @if (hasImages)
+            @if (hasImages && productImages != null)
             {
                 // 使用从数据库获取的实际图片URL
                 <text>

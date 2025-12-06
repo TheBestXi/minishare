@@ -95,8 +95,8 @@
                                     <li><a class="dropdown-item" asp-controller="UserProfile" asp-action="Index"><i class="fas fa-user me-2"></i>我的资料</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <li>
-                                            <a class="dropdown-item position-relative" asp-controller="Admin" asp-action="Products">
+                                        <li class="dropdown-submenu">
+                                            <a class="dropdown-item dropdown-toggle position-relative" href="#">
                                                 <i class="fas fa-cog me-2"></i>后台管理
                                                 @if (pendingRequestCount > 0)
                                                 {
@@ -105,6 +105,11 @@
                                                     </span>
                                                 }
                                             </a>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Products"><i class="fas fa-shopping-bag me-2"></i>商品管理</a></li>
+                                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Posts"><i class="fas fa-newspaper me-2"></i>帖子管理</a></li>
+                                                <li><a class="dropdown-item" asp-controller="UserManagementExtensions" asp-action="Index"><i class="fas fa-users-cog me-2"></i>用户管理</a></li>
+                                            </ul>
                                         </li>
                                     }
                                     <li><hr class="dropdown-divider"></li>

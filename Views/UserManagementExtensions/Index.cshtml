@@ -1,0 +1,330 @@
+@model dynamic
+@{	ViewData["Title"] = "用户管理扩展";}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">用户管理扩展</h2>
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-4">@TempData["ErrorMessage"]</div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mb-4">@TempData["SuccessMessage"]</div>
+    }
+    
+    <!-- 用户统计信息 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="fas fa-users fs-3 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">总用户数</h6>
+                            <h3 id="totalUsers" class="fw-bold mb-0">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="fas fa-user-shield fs-3 text-danger"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">管理员</h6>
+                            <h3 id="adminCount" class="fw-bold mb-0">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="fas fa-user fs-3 text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">普通用户</h6>
+                            <h3 id="userCount" class="fw-bold mb-0">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="fas fa-clock fs-3 text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">待审批</h6>
+                            <h3 id="pendingApprovals" class="fw-bold mb-0">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 批量操作和搜索 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">批量操作</h5>
+                    <form id="batchUpdateRolesForm">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="userIds" class="form-label">选择用户</label>
+                                <select multiple class="form-select" id="userIds" name="UserIds[]" aria-label="选择用户">
+                                    <!-- 用户列表将通过JavaScript动态加载 -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="rolesToAdd" class="form-label">添加角色</label>
+                                <select multiple class="form-select" id="rolesToAdd" name="RolesToAdd[]">
+                                    <option value="Admin">管理员</option>
+                                    <option value="User">用户</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save me-1"></i>应用
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">搜索和导出</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchTerm" placeholder="搜索用户名或邮箱...">
+                                <button class="btn btn-primary" id="searchBtn">
+                                    <i class="fas fa-search me-1"></i>搜索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="@Url.Action("ExportUsers", "UserManagementExtensions")" class="btn btn-success w-100">
+                                <i class="fas fa-file-export me-1"></i>导出用户列表
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 搜索结果 -->
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">搜索结果</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="searchResults">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">请输入搜索条件查找用户</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 加载用户统计信息
+            loadUserStatistics();
+            
+            // 加载用户列表到下拉框
+            loadUsers();
+            
+            // 批量更新角色表单提交
+            $('#batchUpdateRolesForm').submit(function(e) {
+                e.preventDefault();
+                
+                var formData = {
+                    UserIds: $('#userIds').val(),
+                    RolesToAdd: $('#rolesToAdd').val()
+                };
+                
+                $.ajax({
+                    url: '@Url.Action("BatchUpdateRoles", "UserManagementExtensions")',
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json; charset=utf-8',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            loadUserStatistics();
+                            $('#userIds').val([]);
+                            $('#rolesToAdd').val([]);
+                        } else {
+                            alert('操作失败: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('操作失败: ' + error);
+                    }
+                });
+            });
+            
+            // 搜索用户
+            $('#searchBtn').click(function() {
+                searchUsers();
+            });
+            
+            $('#searchTerm').keypress(function(e) {
+                if (e.which === 13) {
+                    searchUsers();
+                }
+            });
+            
+            // 页面加载时默认显示所有用户
+            searchUsers();
+        });
+        
+        function loadUserStatistics() {
+            $.ajax({
+                url: '@Url.Action("UserStatistics", "UserManagementExtensions")',
+                type: 'GET',
+                success: function(data) {
+                    $('#totalUsers').text(data.totalUsers);
+                    $('#adminCount').text(data.adminCount);
+                    $('#userCount').text(data.userCount);
+                    $('#pendingApprovals').text(data.pendingApprovals);
+                },
+                error: function() {
+                    console.log('加载用户统计信息失败');
+                }
+            });
+        }
+        
+        function loadUsers() {
+            $.ajax({
+                url: '@Url.Action("SearchUsers", "UserManagementExtensions")?searchTerm=',
+                type: 'GET',
+                success: function(users) {
+                    var userSelect = $('#userIds');
+                    userSelect.empty();
+                    
+                    users.forEach(function(user) {
+                        userSelect.append($('<option>', {
+                            value: user.id,
+                            text: user.userName + ' (' + user.email + ')'
+                        }));
+                    });
+                },
+                error: function() {
+                    console.log('加载用户列表失败');
+                }
+            });
+        }
+        
+        function searchUsers() {
+            var searchTerm = $('#searchTerm').val();
+            
+            $.ajax({
+                url: '@Url.Action("SearchUsers", "UserManagementExtensions")?searchTerm=' + encodeURIComponent(searchTerm),
+                type: 'GET',
+                success: function(users) {
+                    var resultsBody = $('#searchResults');
+                    resultsBody.empty();
+                    
+                    if (users.length === 0) {
+                        resultsBody.html('<tr><td colspan="4" class="text-center text-muted">未找到匹配的用户</td></tr>');
+                        return;
+                    }
+                    
+                    users.forEach(function(user) {
+                        var row = $('<tr>');
+                        row.append($('<td>').text(user.userName));
+                        row.append($('<td>').text(user.email));
+                        row.append($('<td>').html('<span class="badge bg-success">正常</span>'));
+                        
+                        var actions = $('<td>');
+                        var toggleBtn = $('<button>')
+                            .addClass('btn btn-sm btn-warning me-1')
+                            .html('<i class="fas fa-lock me-1"></i>锁定')
+                            .click(function() {
+                                toggleUserLockout(user.id, this);
+                            });
+                        
+                        actions.append(toggleBtn);
+                        actions.append($('<a>')
+                            .addClass('btn btn-sm btn-primary')
+                            .attr('href', '@Url.Action("Edit", "UserManagement")?id=' + user.id)
+                            .html('<i class="fas fa-edit me-1"></i>编辑'));
+                        
+                        row.append(actions);
+                        resultsBody.append(row);
+                    });
+                },
+                error: function() {
+                    console.log('搜索用户失败');
+                }
+            });
+        }
+        
+        function toggleUserLockout(userId, button) {
+            $.ajax({
+                url: '@Url.Action("ToggleUserLockout", "UserManagementExtensions")',
+                type: 'POST',
+                data: JSON.stringify({ userId: userId }),
+                contentType: 'application/json; charset=utf-8',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.isLocked) {
+                            $(button).removeClass('btn-warning').addClass('btn-success');
+                            $(button).html('<i class="fas fa-unlock me-1"></i>解锁');
+                        } else {
+                            $(button).removeClass('btn-success').addClass('btn-warning');
+                            $(button).html('<i class="fas fa-lock me-1"></i>锁定');
+                        }
+                        alert(response.message);
+                    } else {
+                        alert('操作失败: ' + response.message);
+                    }
+                },
+                error: function() {
+                    console.log('切换用户锁定状态失败');
+                }
+            });
+        }
+    </script>
+}

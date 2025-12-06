@@ -73,7 +73,6 @@ namespace MiniShare.Controllers
                 Birthday = user.Birthday,
                 Major = user.Major,
                 School = user.School,
-                AvatarUrl = user.AvatarUrl,
                 SelectedRoles = userRoles.ToArray(),
                 AllRoles = allRoles.Select(r => r.Name).ToArray()
             };
@@ -102,7 +101,6 @@ namespace MiniShare.Controllers
                 user.Birthday = model.Birthday;
                 user.Major = model.Major;
                 user.School = model.School;
-                user.AvatarUrl = model.AvatarUrl;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (result.Succeeded)
@@ -236,8 +234,6 @@ namespace MiniShare.Controllers
         public string? Major { get; set; }
         
         public string? School { get; set; }
-        
-        public string? AvatarUrl { get; set; }
         
         public string[] SelectedRoles { get; set; }
         public string[] AllRoles { get; set; }

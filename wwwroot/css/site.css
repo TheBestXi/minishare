@@ -440,3 +440,56 @@ section {
     gap: 10px;
   }
 }
+
+/* Nested Dropdown Menu Styles for Bootstrap 5 */
+.dropdown-submenu {
+  position: relative;
+}
+
+/* Show submenu on hover (desktop) */
+@media (min-width: 768px) {
+  .dropdown-submenu > .dropdown-menu {
+    display: none;
+  }
+  
+  .dropdown-submenu:hover > .dropdown-menu {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-top: 0;
+    margin-left: 0;
+    min-width: 180px;
+    z-index: 1050;
+  }
+  
+  .dropdown-submenu > .dropdown-toggle::after {
+    transform: rotate(-90deg);
+    margin-left: 0.255em;
+  }
+}
+
+/* Mobile responsiveness for nested dropdowns */
+@media (max-width: 767px) {
+  .dropdown-submenu .dropdown-menu {
+    position: static;
+    border: none;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+  }
+  
+  .dropdown-submenu .dropdown-toggle::after {
+    transform: rotate(-90deg);
+    margin-left: 0.255em;
+  }
+}
+
+/* Ensure dropdowns work correctly with Bootstrap's dropdown structure */
+.dropdown-menu {
+  z-index: 1000;
+}
+
+/* Add animation to dropdowns */
+.dropdown-menu {
+  animation: fadeIn 0.2s ease-out;
+}

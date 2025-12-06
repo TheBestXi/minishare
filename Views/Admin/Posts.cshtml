@@ -9,6 +9,27 @@
             <i class="fas fa-newspaper me-2"></i>帖子管理
         </h2>
     </div>
+    
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchTerm" placeholder="搜索标题、内容或作者..." value="@ViewData["SearchTerm"]">
+                        <button class="btn btn-primary" id="searchBtn">
+                            <i class="fas fa-search me-1"></i>搜索
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form id="searchForm" method="get" asp-controller="Admin" asp-action="Posts">
+        <input type="hidden" id="formSearchTerm" name="searchTerm" value="@ViewData["SearchTerm"]">
+        <input type="hidden" id="formSortBy" name="sortBy" value="@ViewData["SortBy"]">
+        <input type="hidden" id="formSortOrder" name="sortOrder" value="@ViewData["SortOrder"]">
+    </form>
 
     @if (Model != null && Model.Any())
     {
@@ -17,11 +38,61 @@
                 <thead class="table-dark">
                     <tr>
                         <th class="text-center" style="width: 60px;">#</th>
-                        <th>标题</th>
-                        <th>作者</th>
-                        <th class="text-center" style="width: 120px;">点赞数</th>
-                        <th class="text-center" style="width: 120px;">评论数</th>
-                        <th class="text-center" style="width: 150px;">发布时间</th>
+                        <th class="sortable" data-sort="title">
+                            标题
+                            @if (ViewData["SortBy"].ToString() == "title")
+                            {
+                                <i class="fas fa-sort-@(ViewData["SortOrder"].ToString() == "asc" ? "up" : "down") ms-1"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                            }
+                        </th>
+                        <th class="sortable" data-sort="author">
+                            作者
+                            @if (ViewData["SortBy"].ToString() == "author")
+                            {
+                                <i class="fas fa-sort-@(ViewData["SortOrder"].ToString() == "asc" ? "up" : "down") ms-1"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                            }
+                        </th>
+                        <th class="text-center sortable" data-sort="likes">
+                            点赞数
+                            @if (ViewData["SortBy"].ToString() == "likes")
+                            {
+                                <i class="fas fa-sort-@(ViewData["SortOrder"].ToString() == "asc" ? "up" : "down") ms-1"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                            }
+                        </th>
+                        <th class="text-center sortable" data-sort="comments">
+                            评论数
+                            @if (ViewData["SortBy"].ToString() == "comments")
+                            {
+                                <i class="fas fa-sort-@(ViewData["SortOrder"].ToString() == "asc" ? "up" : "down") ms-1"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                            }
+                        </th>
+                        <th class="text-center sortable" data-sort="createdAt">
+                            发布时间
+                            @if (ViewData["SortBy"].ToString() == "createdAt")
+                            {
+                                <i class="fas fa-sort-@(ViewData["SortOrder"].ToString() == "asc" ? "up" : "down") ms-1"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sort ms-1 text-muted"></i>
+                            }
+                        </th>
                         <th class="text-end" style="width: 120px;">操作</th>
                     </tr>
                 </thead>
@@ -102,3 +173,61 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        // 文档加载完成后执行
+        $(document).ready(function () {
+            // 搜索按钮点击事件
+            $('#searchBtn').click(function () {
+                performSearch();
+            });
+            
+            // 回车键触发搜索
+            $('#searchTerm').keypress(function (e) {
+                if (e.which === 13) { // Enter key
+                    performSearch();
+                }
+            });
+            
+            // 排序表头点击事件
+            $('.sortable').click(function () {
+                var sortBy = $(this).data('sort');
+                var currentSortBy = $('#formSortBy').val();
+                var currentSortOrder = $('#formSortOrder').val();
+                
+                // 如果点击的是当前排序列，则切换排序方向
+                if (sortBy === currentSortBy) {
+                    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // 否则默认升序
+                    currentSortOrder = 'asc';
+                }
+                
+                // 更新表单并提交
+                $('#formSortBy').val(sortBy);
+                $('#formSortOrder').val(currentSortOrder);
+                $('#searchForm').submit();
+            });
+            
+            // 表格行悬停效果
+            $('table tbody tr').hover(
+                function () {
+                    $(this).addClass('table-active');
+                },
+                function () {
+                    $(this).removeClass('table-active');
+                }
+            );
+        });
+        
+        // 执行搜索
+        function performSearch() {
+            var searchTerm = $('#searchTerm').val();
+            $('#formSearchTerm').val(searchTerm);
+            $('#formSortBy').val('createdAt'); // 重置排序
+            $('#formSortOrder').val('desc');
+            $('#searchForm').submit();
+        }
+    </script>
+}
