@@ -52,6 +52,21 @@ namespace MiniShare.Models
 
         public int? ReviewedById { get; set; }
         public ApplicationUser? ReviewedBy { get; set; }
+        
+        /// <summary>
+        /// 原始商品ID，用于标识是修改申请
+        /// </summary>
+        public int? OriginalProductId { get; set; }
+        
+        /// <summary>
+        /// 原始商品导航属性
+        /// </summary>
+        public Product? OriginalProduct { get; set; }
+        
+        /// <summary>
+        /// 商品图片导航属性
+        /// </summary>
+        public ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
     }
 }
 

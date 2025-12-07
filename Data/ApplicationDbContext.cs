@@ -66,7 +66,7 @@ namespace MiniShare.Data
 
             builder.Entity<ProductImage>()
                 .HasOne(img => img.ProductRequest)
-                .WithMany()
+                .WithMany(r => r.ProductImages)
                 .HasForeignKey(img => img.ProductRequestId)
                 .OnDelete(DeleteBehavior.Cascade);
 

@@ -1,0 +1,160 @@
+@model MiniShare.Models.Post
+@{	ViewData["Title"] = "编辑帖子";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">编辑帖子</h2>
+    
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+        <div class="card-body p-4">
+            <form asp-controller="UserPosts" asp-action="Edit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="row g-4">
+                    <!-- 帖子基本信息 -->
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-3">帖子信息</h5>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">标题</label>
+                            <input asp-for="Title" class="form-control" required maxlength="100" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">内容</label>
+                            <textarea asp-for="Content" class="form-control" rows="10" required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">帖子图片</label>
+                            <input type="file" name="images" class="form-control" multiple accept="image/*" />
+                            <div class="form-text">
+                                最多上传9张图片，单张图片大小不超过5MB，支持jpg、jpeg、png、gif格式
+                            </div>
+                            
+                            <!-- 现有图片预览 -->
+                            @if (Model.Images != null && Model.Images.Any())
+                            {
+                                <div class="mt-3">
+                                    <h6 class="fw-bold">现有图片</h6>
+                                    <div class="row g-2">
+                                        @foreach (var image in Model.Images.OrderBy(img => img.SortOrder))
+                                        {
+                                            <div class="col-3">
+                                                <div class="position-relative">
+                                                    <img src="@image.Url" alt="帖子图片" class="img-fluid rounded" style="height: 100px; object-fit: cover;" />
+                                                    <button type="button" class="position-absolute top-0 end-0 bg-danger text-white rounded-circle p-1 border-0" style="width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center;" onclick="removePostImage(@image.Id)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                    @if (image.IsMain)
+                                                    {
+                                                        <div class="position-absolute bottom-0 left-0 bg-primary text-white text-xs px-2 py-1 rounded-end">
+                                                            主图
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            <!-- 隐藏的输入框，用于存储要删除的图片ID -->
+                            <input type="hidden" id="imagesToDelete" name="imagesToDelete" value="" />
+                        </div>
+                    </div>
+                    
+                    <!-- 操作提示 -->
+                    <div class="col-md-4">
+                        <div class="card bg-light border rounded-3 p-3 h-100">
+                            <h5 class="fw-bold mb-3">操作提示</h5>
+                            <ul class="list-unstyled text-muted small">
+                                <li class="mb-2">
+                                    <i class="fas fa-info-circle text-primary me-1"></i>
+                                    帖子修改后将直接更新，无需审核
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-info-circle text-primary me-1"></i>
+                                    原有评论、点赞和收藏数据将被保留
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-info-circle text-primary me-1"></i>
+                                    上传新图片将替换原有图片
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-info-circle text-primary me-1"></i>
+                                    第一张图片将作为主图
+                                </li>
+                            </ul>
+                            
+                            <!-- 操作按钮 -->
+                            <div class="mt-auto pt-3">
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="UserPosts" asp-action="Index" class="btn btn-secondary flex-grow-1">
+                                        <i class="fas fa-arrow-left me-1"></i>取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary flex-grow-1">
+                                        <i class="fas fa-save me-1"></i>保存修改
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 表单验证
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+        
+        // 图片预览功能
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#imagePreview').attr('src', e.target.result);
+                    $('#imagePreview').removeClass('d-none');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        $("#imageUpload").change(function() {
+            readURL(this);
+        });
+        
+        // 删除帖子图片
+        var imagesToDelete = [];
+        
+        function removePostImage(imageId) {
+            // 从DOM中移除图片元素
+            event.target.closest('.col-3').remove();
+            
+            // 添加到要删除的图片ID列表
+            imagesToDelete.push(imageId);
+            
+            // 更新隐藏输入框的值
+            $('#imagesToDelete').val(imagesToDelete.join(','));
+        }
+    </script>
+}

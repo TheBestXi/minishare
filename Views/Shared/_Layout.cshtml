@@ -93,6 +93,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <li><a class="dropdown-item" asp-controller="UserProfile" asp-action="Index"><i class="fas fa-user me-2"></i>我的资料</a></li>
+                                    <li><a class="dropdown-item" asp-controller="UserProducts" asp-action="Index"><i class="fas fa-shopping-bag me-2"></i>我的商品管理</a></li>
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li class="dropdown-submenu">

@@ -1,0 +1,326 @@
+@model MiniShare.Models.ProductRequest
+@{  
+    ViewData["Title"] = "商品申请详情";
+    
+    string GetStatusBadge(MiniShare.Models.ProductRequestStatus status) => status switch
+    {
+        MiniShare.Models.ProductRequestStatus.Pending => "bg-warning text-dark",
+        MiniShare.Models.ProductRequestStatus.Approved => "bg-success",
+        MiniShare.Models.ProductRequestStatus.Rejected => "bg-danger",
+        _ => "bg-secondary"
+    };
+    
+    string GetShippingMethodText(MiniShare.Models.ShippingMethod method) => method switch
+    {
+        MiniShare.Models.ShippingMethod.Express => "快递配送",
+        MiniShare.Models.ShippingMethod.Meetup => "面交",
+        _ => "未知"
+    };
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>商品申请详情</h2>
+        <div>
+            <a asp-controller="ProductRequest" asp-action="Index" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-list me-2"></i>返回列表
+            </a>
+            <form asp-controller="ProductRequest" asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>删除记录
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["RequestMessage"] != null)
+    {
+        <div class="alert alert-info">
+            @TempData["RequestMessage"]
+        </div>
+    }
+
+    <div class="row">
+        <!-- 左侧：商品详情 -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">商品信息</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 商品图片 -->
+                    @if (Model.ProductImages != null && Model.ProductImages.Any())
+                    {
+                        var images = Model.ProductImages.OrderBy(img => img.SortOrder).ToList();
+                        var mainImage = images.FirstOrDefault(img => img.IsMain) ?? images.First();
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-2">商品图片</h6>
+                            
+                            <!-- 主图放大预览 -->
+                            <div class="mb-3">
+                                <div class="card rounded overflow-hidden shadow-sm">
+                                    <div class="product-main-image-container" style="height: 400px; overflow: hidden;">
+                                        <img src="@mainImage.ImageUrl" alt="主图" class="img-fluid w-100 h-100 object-fit-cover" 
+                                             data-bs-toggle="modal" data-bs-target="#imageModal" 
+                                             onclick="openImageModal('@mainImage.ImageUrl')" 
+                                             style="cursor: pointer; transition: transform 0.3s ease;" 
+                                             onmouseover="this.style.transform='scale(1.05)'" 
+                                             onmouseout="this.style.transform='scale(1)'">
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <small class="text-muted">点击图片放大查看</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 缩略图列表 -->
+                            <div class="row g-2">
+                                @for (int i = 0; i < images.Count; i++)
+                                {
+                                    var image = images[i];
+                                    <div class="col-md-2">
+                                        <div class="position-relative">
+                                            <div class="thumbnail-container" style="height: 120px; overflow: hidden; border-radius: 8px; cursor: pointer;">
+                                                <img src="@image.ImageUrl" alt="商品图片" 
+                                                     class="img-fluid w-100 h-100 object-fit-cover" 
+                                                     onclick="changeMainImage(this, '@image.ImageUrl')" 
+                                                     style="transition: transform 0.3s ease;" 
+                                                     onmouseover="this.style.transform='scale(1.1)'" 
+                                                     onmouseout="this.style.transform='scale(1)'">
+                                            </div>
+                                            @if (image.IsMain)
+                                            {
+                                                <div class="position-absolute top-0 left-0 bg-primary text-white text-xs px-2 py-1 rounded-end">
+                                                    主图
+                                                </div>
+                                            }
+                                            <div class="position-absolute bottom-0 right-0 bg-dark text-white text-xs px-1 py-0.5 rounded">
+                                                @(i + 1)/@images.Count
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
+                    <!-- 图片放大模态框 -->
+                    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="imageModalLabel">商品图片</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-0">
+                                    <img id="modalImage" src="" alt="放大图片" class="img-fluid w-100" style="max-height: 80vh; object-fit: contain;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        .thumbnail-container {
+                            border: 2px solid transparent;
+                            transition: all 0.3s ease;
+                        }
+                        
+                        .thumbnail-container:hover {
+                            border-color: #0d6efd;
+                            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+                        }
+                    </style>
+                    
+                    <script>
+                        // 切换主图
+                        function changeMainImage(thumbnail, imageUrl) {
+                            // 更新主图
+                            const mainImage = document.querySelector('.product-main-image-container img');
+                            mainImage.src = imageUrl;
+                            
+                            // 更新缩略图样式
+                            document.querySelectorAll('.thumbnail-container').forEach(el => {
+                                el.style.borderColor = 'transparent';
+                            });
+                            thumbnail.closest('.thumbnail-container').style.borderColor = '#0d6efd';
+                        }
+                        
+                        // 打开图片模态框
+                        function openImageModal(imageUrl) {
+                            document.getElementById('modalImage').src = imageUrl;
+                        }
+                    </script>
+                    
+                    <!-- 商品基本信息 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <strong>商品名称：</strong>@Model.Name
+                            </div>
+                            <div class="mb-2">
+                                <strong>商品价格：</strong>￥@Model.Price.ToString("F2")
+                            </div>
+                            <div class="mb-2">
+                                <strong>申请类型：</strong>
+                                @(Model.OriginalProductId.HasValue ? "修改申请" : "新增申请")
+                            </div>
+                            @if (Model.OriginalProductId.HasValue)
+                            {
+                                <div class="mb-2">
+                                    <strong>原商品ID：</strong>@Model.OriginalProductId
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <strong>提交时间：</strong>
+                                @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                            </div>
+                            <div class="mb-2">
+                                <strong>申请人：</strong>
+                                @(Model.RequestedBy?.UserName ?? Model.RequestedBy?.Email ?? "未知")
+                            </div>
+                            <div class="mb-2">
+                                <strong>申请状态：</strong>
+                                <span class="badge @GetStatusBadge(Model.Status)">
+                                    @(Model.Status switch
+                                    {
+                                        MiniShare.Models.ProductRequestStatus.Pending => "待审核",
+                                        MiniShare.Models.ProductRequestStatus.Approved => "已通过",
+                                        MiniShare.Models.ProductRequestStatus.Rejected => "已驳回",
+                                        _ => "未知"
+                                    })
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 商品描述 -->
+                    <div class="mb-4">
+                        <strong>商品描述：</strong>
+                        <div class="mt-1 p-3 bg-light rounded">
+                            @(string.IsNullOrEmpty(Model.Description) ? "暂无描述" : Model.Description)
+                        </div>
+                    </div>
+                    
+                    <!-- 配送信息 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2">配送信息</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>配送方式：</strong>
+                                    @GetShippingMethodText(Model.ShippingMethod)
+                                </div>
+                                <div class="mb-2">
+                                    <strong>发货时间：</strong>
+                                    @Model.ShippingTimeHours 小时内
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>运费：</strong>
+                                    ￥@Model.ShippingFee.ToString("F2")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：审核信息和操作 -->
+        <div class="col-md-4">
+            <!-- 审核信息 -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">审核信息</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == MiniShare.Models.ProductRequestStatus.Pending)
+                    {
+                        <div class="alert alert-info text-center py-3">
+                            <i class="fas fa-hourglass-half fa-2x mb-2 text-muted"></i>
+                            <p class="mb-0">等待审核</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <strong>审核人：</strong>
+                            @(Model.ReviewedBy?.UserName ?? Model.ReviewedBy?.Email ?? "未知")
+                        </div>
+                        <div class="mb-3">
+                            <strong>审核时间：</strong>
+                            @Model.ReviewedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.ReviewComment))
+                        {
+                            <div class="mb-3">
+                                <strong>审核备注：</strong>
+                                <div class="mt-1 p-3 bg-light rounded">
+                                    @Model.ReviewComment
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            
+            <!-- 审核操作 -->
+            @if (Model.Status == MiniShare.Models.ProductRequestStatus.Pending)
+            {
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">审核操作</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <form asp-controller="ProductRequest" asp-action="Approve" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-check me-2"></i>批准申请
+                                </button>
+                            </form>
+                            
+                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                <i class="fas fa-times me-2"></i>驳回申请
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 驳回申请模态框 -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="ProductRequest" asp-action="Reject" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="rejectModalLabel">驳回申请</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="reviewComment" class="form-label">驳回原因（可选）</label>
+                        <textarea class="form-control" id="reviewComment" name="reviewComment" rows="3" placeholder="请输入驳回原因..."></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        驳回后，此申请将不再显示在待审核列表中
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-danger">确认驳回</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

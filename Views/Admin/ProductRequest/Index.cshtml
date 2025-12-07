@@ -1,6 +1,7 @@
 @model IEnumerable<MiniShare.Models.ProductRequest>
-@{
+@{  
     ViewData["Title"] = "商品申请管理";
+    
     string GetStatusBadge(MiniShare.Models.ProductRequestStatus status) => status switch
     {
         MiniShare.Models.ProductRequestStatus.Pending => "bg-warning text-dark",
@@ -13,7 +14,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>商品申请管理</h2>
-        <a asp-action="Products" class="btn btn-outline-secondary">
+        <a asp-controller="Admin" asp-action="Products" class="btn btn-outline-secondary">
             <i class="fas fa-list me-2"></i>返回商品列表
         </a>
     </div>
@@ -81,21 +82,43 @@
                             <td class="text-end">
                                 @if (req.Status == MiniShare.Models.ProductRequestStatus.Pending)
                                 {
-                                    <form asp-controller="ProductRequest" asp-action="Approve" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@req.Id" />
+                                    <form asp-controller="ProductRequest" asp-action="Approve" asp-route-id="@req.Id" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-success btn-sm me-2">
                                             <i class="fas fa-check me-1"></i>通过
                                         </button>
                                     </form>
-                                    <form asp-controller="ProductRequest" asp-action="Reject" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@req.Id" />
-                                        <button type="submit" class="btn btn-danger btn-sm me-2">
-                                            <i class="fas fa-times me-1"></i>驳回
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#rejectModal_@req.Id">
+                                        <i class="fas fa-times me-1"></i>驳回
+                                    </button>
+                                    <!-- 驳回申请模态框 -->
+                                    <div class="modal fade" id="rejectModal_@req.Id" tabindex="-1" aria-labelledby="rejectModalLabel_@req.Id" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form asp-controller="ProductRequest" asp-action="Reject" asp-route-id="@req.Id" method="post">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="rejectModalLabel_@req.Id">驳回申请</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="reviewComment_@req.Id" class="form-label">驳回原因（可选）</label>
+                                                            <textarea class="form-control" id="reviewComment_@req.Id" name="reviewComment" rows="3" placeholder="请输入驳回原因..."></textarea>
+                                                        </div>
+                                                        <div class="alert alert-warning">
+                                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                                            驳回后，此申请将不再显示在待审核列表中
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                        <button type="submit" class="btn btn-danger">确认驳回</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 }
-                                <form asp-controller="ProductRequest" asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')">
-                                    <input type="hidden" name="id" value="@req.Id" />
+                                <form asp-controller="ProductRequest" asp-action="Delete" asp-route-id="@req.Id" method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')">
                                     <button type="submit" class="btn btn-secondary btn-sm">
                                         <i class="fas fa-trash me-1"></i>删除
                                     </button>
@@ -116,4 +139,3 @@
         </table>
     </div>
 </div>
-
