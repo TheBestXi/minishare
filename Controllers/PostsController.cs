@@ -89,7 +89,9 @@ namespace MiniShare.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Post model, List<IFormFile>? images)
+        public async Task<IActionResult> Create(
+            [FromForm] Post model,
+            [FromForm(Name = "images")] List<IFormFile>? images)
         {
             if (!ModelState.IsValid) return View(model);
 

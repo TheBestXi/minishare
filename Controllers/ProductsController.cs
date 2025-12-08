@@ -73,8 +73,8 @@ namespace MiniShare.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Name,Price,Description,ShippingTimeHours,ShippingMethod,ShippingFee")] ProductRequest request,
-            List<IFormFile> productImages)
+            [FromForm] ProductRequest request,
+            [FromForm(Name = "productImages")] List<IFormFile> productImages)
         {
             // 验证表单数据
             if (!ModelState.IsValid)
