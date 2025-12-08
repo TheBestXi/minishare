@@ -6,7 +6,6 @@ using MiniShare.Models;
 
 namespace MiniShare.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("Admin/ProductRequests")]
     public class ProductRequestController : Controller
     {
@@ -20,6 +19,14 @@ namespace MiniShare.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            // 调试信息
+            Console.WriteLine("ProductRequestController.Index() 被调用");
+            
+            // 先查询所有ProductRequest，不包含导航属性
+            var allRequests = await _context.ProductRequests.ToListAsync();
+            Console.WriteLine($"查询到 {allRequests.Count} 条商品申请记录");
+            
+            // 包含导航属性的查询
             var requests = await _context.ProductRequests
                 .Include(r => r.RequestedBy)
                 .Include(r => r.ReviewedBy)
@@ -27,6 +34,8 @@ namespace MiniShare.Controllers
                 .Include(r => r.ProductImages)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
+            Console.WriteLine($"包含导航属性查询到 {requests.Count} 条商品申请记录");
+            
             return View("~/Views/Admin/ProductRequest/Index.cshtml", requests);
         }
         

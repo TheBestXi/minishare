@@ -98,6 +98,13 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+// 调用SeedAdminAsync方法初始化角色
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedAdminAsync(services);
+}
+
 app.Run();
 
 static async Task SeedAdminAsync(IServiceProvider services)

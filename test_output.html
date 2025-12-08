@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&#x5546;&#x54C1;&#x7533;&#x8BF7;&#x7BA1;&#x7406; - MiniShare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css?v=REmY6KmPKWcUfFhxDHy5VKF9zvr-DFPWj0bEWvVi_WY" />
+    <link rel="stylesheet" href="/MiniShare.styles.css?v=CfZpixarY0ElnYD3sXhEnXoRSsFdaej_oXnvigMLu2Q" />
+</head>
+<body class="">
+    <header>
+        <nav b-hgcisbh2m0 class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+            <div b-hgcisbh2m0 class="container">
+                <a class="navbar-brand fw-bold" href="/">
+                    <i b-hgcisbh2m0 class="fas fa-share-alt me-2"></i>MiniShare
+                </a>
+                <button b-hgcisbh2m0 class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span b-hgcisbh2m0 class="navbar-toggler-icon"></span>
+                </button>
+                <div b-hgcisbh2m0 class="navbar-collapse collapse">
+                    <ul b-hgcisbh2m0 class="navbar-nav me-auto">
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i b-hgcisbh2m0 class="fas fa-home me-1"></i>首页
+                            </a>
+                        </li>
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/Posts">
+                                <i b-hgcisbh2m0 class="fas fa-newspaper me-1"></i>帖子
+                            </a>
+                        </li>
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/Products">
+                                <i b-hgcisbh2m0 class="fas fa-shopping-bag me-1"></i>商品
+                            </a>
+                        </li>
+                    </ul>
+                    <ul b-hgcisbh2m0 class="navbar-nav">
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link position-relative" href="/Products/Cart">
+                                <i b-hgcisbh2m0 class="fas fa-shopping-cart me-1"></i>购物车
+                                <span b-hgcisbh2m0 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/Collections">
+                                <i b-hgcisbh2m0 class="fas fa-heart me-1"></i>我的收藏
+                            </a>
+                        </li>
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/Orders/MyOrders">
+                                <i b-hgcisbh2m0 class="fas fa-receipt me-1"></i>我的订单
+                            </a>
+                        </li>
+                        <li b-hgcisbh2m0 class="nav-item">
+                            <a class="nav-link" href="/Profile">
+                                <i b-hgcisbh2m0 class="fas fa-user me-1"></i>个人主页
+                            </a>
+                        </li>
+                            <li b-hgcisbh2m0 class="nav-item dropdown">
+                                <a b-hgcisbh2m0 class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i b-hgcisbh2m0 class="fas fa-user-circle me-1"></i>账户
+                                </a>
+                                <ul b-hgcisbh2m0 class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li b-hgcisbh2m0><a b-hgcisbh2m0 class="dropdown-item" href="/Login"><i b-hgcisbh2m0 class="fas fa-sign-in-alt me-2"></i>登录</a></li>
+                                    <li b-hgcisbh2m0><a b-hgcisbh2m0 class="dropdown-item" href="/Identity/Account/Register"><i b-hgcisbh2m0 class="fas fa-user-plus me-2"></i>注册</a></li>
+                                </ul>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div b-hgcisbh2m0 class="main-content">
+        <main b-hgcisbh2m0 role="main" class="container py-4">
+            
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>商品申请管理</h2>
+        <a class="btn btn-outline-secondary" href="/Admin/Products">
+            <i class="fas fa-list me-2"></i>返回商品列表
+        </a>
+    </div>
+
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>价格</th>
+                    <th>申请人</th>
+                    <th>状态</th>
+                    <th>提交时间</th>
+                    <th>审核信息</th>
+                    <th class="text-end">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                        <tr>
+                            <td>
+                                <a class="text-decoration-none" href="/Admin/ProductRequests/Details/18">
+                                    &#x6570;&#x636E;&#x5206;&#x6790;&#x4EE3;&#x505A;
+                                </a>
+                            </td>
+                            <td>￥13.000000000000000000000000000</td>
+                            <td>admin</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    &#x5DF2;&#x901A;&#x8FC7;
+                                </span>
+                            </td>
+                            <td>2025-12-06 15:34</td>
+                            <td>
+                                    <div>审核人：admin</div>
+                                    <div>时间：2025-12-06 15:34</div>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')" action="/Admin/ProductRequests/Delete/18">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8JpAQR2IpgtOsUfg18RdSEPS5R0hZ_10sH512w4h08u1y7OVDACDD91oBdRlx1CaLrl_Vc_GLfVJolB8KyYqKUbQ8LRIbKoJ3xpufoHrxQBpxf0sSpW_DKuptfeo0zYRqiq6tOnywuJxInlwHqIQPyU" /></form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="text-decoration-none" href="/Admin/ProductRequests/Details/17">
+                                    &#x6570;&#x636E;&#x5206;&#x6790;&#x4EE3;&#x505A;
+                                </a>
+                            </td>
+                            <td>￥15.000000000000000000000000000</td>
+                            <td>admin</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    &#x5DF2;&#x901A;&#x8FC7;
+                                </span>
+                            </td>
+                            <td>2025-12-06 15:14</td>
+                            <td>
+                                    <div>审核人：admin</div>
+                                    <div>时间：2025-12-06 15:15</div>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')" action="/Admin/ProductRequests/Delete/17">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8JpAQR2IpgtOsUfg18RdSEPS5R0hZ_10sH512w4h08u1y7OVDACDD91oBdRlx1CaLrl_Vc_GLfVJolB8KyYqKUbQ8LRIbKoJ3xpufoHrxQBpxf0sSpW_DKuptfeo0zYRqiq6tOnywuJxInlwHqIQPyU" /></form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="text-decoration-none" href="/Admin/ProductRequests/Details/16">
+                                    &#x5237;&#x673A;
+                                </a>
+                            </td>
+                            <td>￥12.000000000000000000000000000</td>
+                            <td>2664052608</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    &#x5DF2;&#x901A;&#x8FC7;
+                                </span>
+                            </td>
+                            <td>2025-12-06 09:01</td>
+                            <td>
+                                    <div>审核人：admin</div>
+                                    <div>时间：2025-12-06 09:01</div>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')" action="/Admin/ProductRequests/Delete/16">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8JpAQR2IpgtOsUfg18RdSEPS5R0hZ_10sH512w4h08u1y7OVDACDD91oBdRlx1CaLrl_Vc_GLfVJolB8KyYqKUbQ8LRIbKoJ3xpufoHrxQBpxf0sSpW_DKuptfeo0zYRqiq6tOnywuJxInlwHqIQPyU" /></form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="text-decoration-none" href="/Admin/ProductRequests/Details/15">
+                                    &#x7BEE;&#x7403;&#x5361;
+                                </a>
+                            </td>
+                            <td>￥12.000000000000000000000000000</td>
+                            <td>admin</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    &#x5DF2;&#x901A;&#x8FC7;
+                                </span>
+                            </td>
+                            <td>2025-12-06 08:15</td>
+                            <td>
+                                    <div>审核人：admin</div>
+                                    <div>时间：2025-12-06 08:15</div>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')" action="/Admin/ProductRequests/Delete/15">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8JpAQR2IpgtOsUfg18RdSEPS5R0hZ_10sH512w4h08u1y7OVDACDD91oBdRlx1CaLrl_Vc_GLfVJolB8KyYqKUbQ8LRIbKoJ3xpufoHrxQBpxf0sSpW_DKuptfeo0zYRqiq6tOnywuJxInlwHqIQPyU" /></form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a class="text-decoration-none" href="/Admin/ProductRequests/Details/14">
+                                    &#x6E38;&#x6CF3;&#x5361;
+                                </a>
+                            </td>
+                            <td>￥1243.0000000000000000000000000</td>
+                            <td>2664052608</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    &#x5DF2;&#x901A;&#x8FC7;
+                                </span>
+                            </td>
+                            <td>2025-12-06 08:13</td>
+                            <td>
+                                    <div>审核人：admin</div>
+                                    <div>时间：2025-12-06 08:13</div>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline" onsubmit="return confirm('确定要删除此申请记录吗？')" action="/Admin/ProductRequests/Delete/14">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-trash me-1"></i>删除
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8JpAQR2IpgtOsUfg18RdSEPS5R0hZ_10sH512w4h08u1y7OVDACDD91oBdRlx1CaLrl_Vc_GLfVJolB8KyYqKUbQ8LRIbKoJ3xpufoHrxQBpxf0sSpW_DKuptfeo0zYRqiq6tOnywuJxInlwHqIQPyU" /></form>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+        </main>
+    </div>
+
+    <footer b-hgcisbh2m0 class="bg-dark text-light py-4 mt-5">
+        <div b-hgcisbh2m0 class="container">
+            <div b-hgcisbh2m0 class="row">
+                <div b-hgcisbh2m0 class="col-md-6">
+                    <h5 b-hgcisbh2m0><i b-hgcisbh2m0 class="fas fa-share-alt me-2"></i>MiniShare</h5>
+                    <p b-hgcisbh2m0>一个分享产品和文章的平台，让创意和知识自由流动。</p>
+                </div>
+                <div b-hgcisbh2m0 class="col-md-3">
+                    <h5 b-hgcisbh2m0>快速链接</h5>
+                    <ul b-hgcisbh2m0 class="list-unstyled">
+                        <li b-hgcisbh2m0><a class="text-light" href="/">首页</a></li>
+                        <li b-hgcisbh2m0><a class="text-light" href="/Posts">帖子</a></li>
+                        <li b-hgcisbh2m0><a class="text-light" href="/Products">商品</a></li>
+                    </ul>
+                </div>
+                <div b-hgcisbh2m0 class="col-md-3">
+                    <h5 b-hgcisbh2m0>关于我们</h5>
+                    <ul b-hgcisbh2m0 class="list-unstyled">
+                        <li b-hgcisbh2m0><a class="text-light" href="/Home/Privacy">隐私政策</a></li>
+                        <li b-hgcisbh2m0><a b-hgcisbh2m0 href="#" class="text-light">联系我们</a></li>
+                        <li b-hgcisbh2m0><a b-hgcisbh2m0 href="#" class="text-light">帮助中心</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr b-hgcisbh2m0 class="bg-light">
+            <div b-hgcisbh2m0 class="text-center">
+                &copy; 2025 - MiniShare - 保留所有权利
+            </div>
+        </div>
+    </footer>
+    
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js?v=7_icTbkeIF2cnVMx5hHSS_50NFaKevmj-VAzZ0_g1Ek"></script>
+
+    
+</body>
+</html>
