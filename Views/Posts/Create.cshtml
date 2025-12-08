@@ -27,17 +27,10 @@
                 <i class="fas fa-info-circle me-2"></i>
                 最多可以上传9张图片，第一张图片将作为帖子主图显示在列表中。
             </div>
-            <div class="d-flex gap-2 mb-3">
-                <input type="file" id="imageInput" accept="image/*" class="form-control" />
-                <button type="button" id="addImageBtn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> 添加图片
-                </button>
-            </div>
+            <input type="file" name="images" multiple accept="image/*" class="form-control" id="imageInput" />
             <small class="form-text text-muted">支持 JPG、PNG、GIF 格式，每张不超过5MB</small>
             <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2"></div>
             <span id="imageCount" class="text-muted small"></span>
-            <!-- 实际提交的文件列表 -->
-            <div id="fileList"></div>
         </div>
         
         <div class="mb-3 d-flex gap-2">
@@ -57,59 +50,36 @@
         $(document).ready(function() {
             const maxImages = 9;
             let selectedFiles = [];
-            const preview = $('#imagePreview');
-            const imageInput = $('#imageInput');
-            const addImageBtn = $('#addImageBtn');
-            const fileList = $('#fileList');
-            const countSpan = $('#imageCount');
 
-            // 添加图片按钮点击事件
-            addImageBtn.on('click', function() {
-                const file = imageInput[0].files[0];
-                if (!file) {
-                    alert('请先选择一张图片');
-                    return;
-                }
-
-                // 检查图片类型
-                if (!file.type.startsWith('image/')) {
-                    alert('只能上传图片文件');
-                    imageInput.val('');
-                    return;
-                }
-
-                // 检查图片大小
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('图片大小不能超过5MB');
-                    imageInput.val('');
-                    return;
-                }
-
-                // 检查图片数量
-                if (selectedFiles.length >= maxImages) {
+            $('#imageInput').on('change', function(e) {
+                const files = Array.from(e.target.files);
+                const preview = $('#imagePreview');
+                const countSpan = $('#imageCount');
+                
+                // 检查总数
+                if (files.length > maxImages) {
                     alert(`最多只能上传${maxImages}张图片`);
-                    imageInput.val('');
+                    $(this).val('');
+                    selectedFiles = [];
+                    preview.empty();
+                    countSpan.text('');
                     return;
                 }
-
-                // 添加到选中文件列表
-                selectedFiles.push(file);
-                updateImageCount();
-                updateImagePreview();
-                imageInput.val('');
-            });
-
-            // 更新图片数量显示
-            function updateImageCount() {
-                countSpan.text(`已选择 ${selectedFiles.length} 张图片${selectedFiles.length > 0 ? '（第一张为主图）' : ''}`);
-            }
-
-            // 更新图片预览
-            function updateImagePreview() {
+                
+                selectedFiles = files;
                 preview.empty();
-                fileList.empty();
-
-                selectedFiles.forEach((file, index) => {
+                
+                files.forEach((file, index) => {
+                    if (!file.type.startsWith('image/')) {
+                        alert('只能上传图片文件');
+                        return;
+                    }
+                    
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`图片 ${file.name} 超过5MB，已跳过`);
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const imgContainer = $('<div>')
@@ -121,7 +91,7 @@
                                 'border-radius': '8px',
                                 'overflow': 'hidden'
                             });
-
+                        
                         const img = $('<img>')
                             .attr('src', e.target.result)
                             .css({
@@ -129,56 +99,22 @@
                                 'height': '100%',
                                 'object-fit': 'cover'
                             });
-
-                        // 删除按钮
-                        const deleteBtn = $('<button>')
-                            .addClass('position-absolute top-0 end-0 bg-danger text-white border-0 rounded-circle p-2')
-                            .css({
-                                'width': '30px',
-                                'height': '30px',
-                                'display': 'flex',
-                                'align-items': 'center',
-                                'justify-content': 'center',
-                                'cursor': 'pointer',
-                                'font-size': '12px',
-                                'z-index': '10'
-                            })
-                            .html('<i class="fas fa-times"></i>')
-                            .on('click', function() {
-                                removeImage(index);
-                            });
-
-                        // 主图标识
+                        
                         if (index === 0) {
-                            const mainBadge = $('<span>')
+                            const badge = $('<span>')
                                 .addClass('badge bg-primary position-absolute top-0 start-0 m-2')
                                 .text('主图');
-                            imgContainer.append(mainBadge);
+                            imgContainer.append(badge);
                         }
-
+                        
                         imgContainer.append(img);
-                        imgContainer.append(deleteBtn);
                         preview.append(imgContainer);
-
-                        // 创建隐藏的文件输入，用于表单提交
-                        const hiddenInput = $('<input>')
-                            .attr('type', 'file')
-                            .attr('name', 'images')
-                            .attr('accept', 'image/*')
-                            .attr('style', 'display: none')
-                            .prop('files', [file]);
-                        fileList.append(hiddenInput);
                     };
                     reader.readAsDataURL(file);
                 });
-            }
-
-            // 移除图片
-            function removeImage(index) {
-                selectedFiles.splice(index, 1);
-                updateImageCount();
-                updateImagePreview();
-            }
+                
+                countSpan.text(`已选择 ${files.length} 张图片${files.length > 0 ? '（第一张为主图）' : ''}`);
+            });
         });
     </script>
 }
